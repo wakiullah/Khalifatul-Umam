@@ -1,56 +1,70 @@
 "use client";
 
-import { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
-import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useToast } from '@/hooks/use-toast';
-import { Loader2, LogIn } from 'lucide-react';
+import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2, LogIn } from "lucide-react";
+import { loginUser } from "@/services/auth.api";
 
 export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
 
-  const from = searchParams.get('from') || '/';
+  const from = searchParams.get("from") || "/";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    console.log('Login attempt:', { email, password });
 
-    // Simulate login
-    setTimeout(() => {
-      if (email && password) {
-        console.log('Login successful');
+    try {
+      const res = await loginUser({ phone, password });
+
+      if (res.success) {
+        // টোকেন স্টোর করা (প্রয়োজন হলে কুকিতে সেট করতে পারেন)
         toast({
-          title: 'লগইন সফল',
-          description: 'স্বাগতম!',
+          title: "লগইন সফল",
+          description: "স্বাগতম!",
         });
         router.push(from);
       } else {
-        console.log('Login failed: Missing credentials');
         toast({
-          title: 'লগইন ব্যর্থ',
-          description: 'ইমেইল বা পাসওয়ার্ড ভুল।',
-          variant: 'destructive',
+          title: "লগইন ব্যর্থ",
+          description: res.message || "ফোন নম্বর বা পাসওয়ার্ড ভুল।",
+          variant: "destructive",
         });
       }
+    } catch (error) {
+      console.error("Login error:", error);
+      toast({
+        title: "ত্রুটি",
+        description: "সার্ভারে সমস্যা হয়েছে।",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
     <main className="min-h-screen flex flex-col">
       <Header />
-      
+
       <section className="flex-1 pt-32 pb-16 flex items-center justify-center bg-gradient-to-b from-primary/10 to-background">
         <div className="container mx-auto px-4">
           <Card className="max-w-md mx-auto">
@@ -62,14 +76,14 @@ export default function Login() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="font-body text-sm font-medium text-foreground mb-2 block">
-                    ইমেইল *
+                    ফোন নম্বর *
                   </label>
                   <Input
-                    type="email"
+                    type="tel"
                     required
-                    placeholder="আপনার ইমেইল লিখুন"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="আপনার ফোন নম্বর লিখুন (01xxxxxxxxx)"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
                     disabled={isLoading}
                   />
                 </div>
@@ -86,7 +100,12 @@ export default function Login() {
                     disabled={isLoading}
                   />
                 </div>
-                <Button type="submit" variant="elegant" className="w-full" disabled={isLoading}>
+                <Button
+                  type="submit"
+                  variant="elegant"
+                  className="w-full"
+                  disabled={isLoading}
+                >
                   {isLoading ? (
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   ) : (
@@ -95,8 +114,11 @@ export default function Login() {
                   লগইন
                 </Button>
                 <p className="text-center text-sm text-muted-foreground">
-                  অ্যাকাউন্ট নেই?{' '}
-                  <Link href="/register" className="text-primary hover:underline">
+                  অ্যাকাউন্ট নেই?{" "}
+                  <Link
+                    href="/register"
+                    className="text-primary hover:underline"
+                  >
                     রেজিস্টার করুন
                   </Link>
                 </p>
@@ -105,7 +127,7 @@ export default function Login() {
           </Card>
         </div>
       </section>
-      
+
       <Footer />
     </main>
   );

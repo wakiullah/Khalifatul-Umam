@@ -6,7 +6,7 @@ import { Button } from "./ui/button";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
-import Logo from '@/public/logo.png'
+import Logo from "@/public/logo.png";
 
 const navLinks = [
   { name: "হোম", href: "/" },
@@ -55,6 +55,8 @@ export function Header() {
     );
   };
 
+  const isHeaderSolid = isScrolled || pathname !== "/";
+
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
@@ -71,14 +73,20 @@ export function Header() {
               <Image src={Logo} alt="Logo" width={48} height={48} />
             </div>
             <div className="hidden sm:block">
-              <h1 className={`font-display text-lg font-semibold leading-tight ${
-                isScrolled ? "text-foreground" : "text-white"
-              }`}>
+              <h1
+                className={`font-display text-lg font-semibold leading-tight ${
+                  isHeaderSolid ? "text-foreground" : "text-white"
+                }`}
+              >
                 খলিফাতুল উমাম
               </h1>
-              <p className={`text-xs text-arabic ${
-                isScrolled ? "text-muted-foreground" : "text-white/80"
-              }`}>عليه السلام</p>
+              <p
+                className={`text-xs text-arabic ${
+                  isHeaderSolid ? "text-muted-foreground" : "text-white/80"
+                }`}
+              >
+                عليه السلام
+              </p>
             </div>
           </Link>
 
@@ -90,7 +98,9 @@ export function Header() {
                   <Link
                     href={link.href}
                     className={`${
-                      isScrolled ? "text-foreground/80 hover:text-primary" : "text-white/90 hover:text-white"
+                      isHeaderSolid
+                        ? "text-foreground/80 hover:text-primary"
+                        : "text-white/90 hover:text-white"
                     } font-body text-sm tracking-wide transition-colors duration-300 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-secondary hover:after:w-full after:transition-all after:duration-300`}
                   >
                     {link.name}
@@ -100,7 +110,9 @@ export function Header() {
                     href={link.href}
                     onClick={() => handleNavClick(link.href)}
                     className={`${
-                      isScrolled ? "text-foreground/80 hover:text-primary" : "text-white/90 hover:text-white"
+                      isHeaderSolid
+                        ? "text-foreground/80 hover:text-primary"
+                        : "text-white/90 hover:text-white"
                     } font-body text-sm tracking-wide transition-colors duration-300 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-secondary hover:after:w-full after:transition-all after:duration-300`}
                   >
                     {link.name}
@@ -119,7 +131,7 @@ export function Header() {
 
           {/* Mobile Menu Toggle */}
           <button
-            className={`lg:hidden p-2 ${isScrolled ? "text-foreground" : "text-white"}`}
+            className={`lg:hidden p-2 ${isHeaderSolid ? "text-foreground" : "text-white"}`}
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label="Toggle menu"
           >
@@ -137,7 +149,9 @@ export function Header() {
                     <Link
                       href={link.href}
                       className={`block font-body text-lg py-2 transition-colors duration-300 ${
-                        isScrolled ? "text-foreground/80 hover:text-primary" : "text-white/90 hover:text-white"
+                        isHeaderSolid
+                          ? "text-foreground/80 hover:text-primary"
+                          : "text-white/90 hover:text-white"
                       }`}
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
@@ -147,7 +161,9 @@ export function Header() {
                     <a
                       href={link.href}
                       className={`block font-body text-lg py-2 transition-colors duration-300 ${
-                        isScrolled ? "text-foreground/80 hover:text-primary" : "text-white/90 hover:text-white"
+                        isHeaderSolid
+                          ? "text-foreground/80 hover:text-primary"
+                          : "text-white/90 hover:text-white"
                       }`}
                       onClick={() => handleNavClick(link.href)}
                     >

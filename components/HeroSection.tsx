@@ -27,9 +27,8 @@ export function HeroSection() {
       {/* Content */}
       <div className="relative z-10 container mx-auto px-4 text-center">
         {/* Arabic Bismillah */}
-        <p className="font-arabic text-secondary text-xl md:text-3xl mb-4 md:mb-6 animate-fade-in max-w-2xl mx-auto leading-relaxed">
-         ছানীয়ে মুজাদ্দিদে আ’যম, আল
-          মানছূর, আওলাদে রসূল
+        <p className="text-secondary text-xl md:text-3xl mb-4 md:mb-6 animate-fade-in max-w-2xl mx-auto leading-relaxed">
+          ছানীয়ে মুজাদ্দিদে আ’যম, আল মানছূর, আওলাদে রসূল
         </p>
 
         {/* Title ornament */}
@@ -70,8 +69,8 @@ export function HeroSection() {
           style={{ animationDelay: "0.6s" }}
         >
           শুকরিয়ার ভাষা নেই পেয়েছি খলীফাতুল উমাম উনার বেমেছাল শানে পড়ি সলাত
-          সালাম। <br className="hidden md:block" />৯ রমাদ্বান মুবারক তাশরীফ ধন্য যমীন আসমান আলোড়িত সব উনার
-          নূরে খুশি করি আশিকান।
+          সালাম। <br className="hidden md:block" />৯ রমাদ্বান মুবারক তাশরীফ ধন্য
+          যমীন আসমান আলোড়িত সব উনার নূরে খুশি করি আশিকান।
         </p>
 
         {/* CTA Buttons */}
@@ -79,7 +78,11 @@ export function HeroSection() {
           className="flex flex-col sm:flex-row items-center justify-center gap-3 md:gap-4 animate-slide-up w-full sm:w-auto px-4 sm:px-0"
           style={{ animationDelay: "0.7s" }}
         >
-          <Button variant="hero" size="lg" className="w-full sm:w-auto text-lg h-12 md:h-14">
+          <Button
+            variant="hero"
+            size="lg"
+            className="w-full sm:w-auto text-lg h-12 md:h-14"
+          >
             Explore His Life
           </Button>
           <Button
@@ -92,7 +95,7 @@ export function HeroSection() {
         </div>
 
         {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce hidden md:block">
+        <div className="absolute -bottom-14 left-1/2 -translate-x-1/2 animate-bounce hidden md:block">
           <a
             href="#biography"
             className="text-primary-foreground/50 hover:text-secondary transition-colors"

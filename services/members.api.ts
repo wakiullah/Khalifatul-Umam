@@ -2,6 +2,11 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { MemberData } from "@/type/member";
+import {
+  API_BASE_URL,
+  getPublicHeaders,
+  getAuthHeaders,
+} from "@/lib/api-client";
 
 export type ActionResponse = {
   success: boolean;
@@ -9,13 +14,15 @@ export type ActionResponse = {
   member?: MemberData;
 };
 
+// Public route - anyone can create member application
 export async function createMemberAction(
   data: MemberData,
 ): Promise<ActionResponse> {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/members`, {
+    const headers = await getPublicHeaders();
+    const res = await fetch(`${API_BASE_URL}/members`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify(data),
     });
     console.log(res);
@@ -29,5 +36,19 @@ export async function createMemberAction(
     return { success: true, message: "Member created successfully" };
   } catch (error) {
     return { success: false, message: "Something went wrong" };
+  }
+}
+
+// Protected route - only admins can view member applications
+export async function getMembersData(): Promise<any> {
+  try {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_BASE_URL}/members`, {
+      headers,
+      cache: "no-store",
+    });
+    return res.json();
+  } catch (error) {
+    return { success: false, message: "Failed to fetch members" };
   }
 }

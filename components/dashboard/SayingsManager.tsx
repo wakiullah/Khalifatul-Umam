@@ -1,22 +1,17 @@
 "use client";
 
-console.log("Dashboard component loaded:", "components/dashboard/SayingsManager.tsx");
-
-import { useState } from "react";
-import { Plus, Trash2, Star, MoreVertical } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Plus, Trash2, Star, MoreVertical, Edit } from "lucide-react";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,67 +27,117 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { toast } from "sonner";
-import { sayingsData, featuredSaying } from "@/data/siteData";
+import { SayingData } from "@/type/saying";
+import {
+  createSaying,
+  deleteSaying,
+  updateSaying,
+} from "@/services/saying.api";
+import { SayingModal } from "./sayings/SayingModal";
+import { CreateSayingRequest } from "@/type/saying";
 
-interface Saying {
-  id: string;
-  arabic: string;
-  translation: string;
-  context: string | null;
-  is_featured: boolean;
-  is_published: boolean;
-}
-
-const SayingsManager = () => {
-  const [sayings, setSayings] = useState<Saying[]>(
-    sayingsData.map((s, i) => ({
-      id: String(i + 1),
-      arabic: s.arabic,
-      translation: s.translation,
-      context: s.context,
-      is_featured: i === 0,
-      is_published: true,
-    }))
-  );
+const SayingsManager = ({ initialData }: { initialData: SayingData[] }) => {
+  const router = useRouter();
+  const [sayings, setSayings] = useState<SayingData[]>(initialData);
   const [isAddingNew, setIsAddingNew] = useState(false);
-  const [newSaying, setNewSaying] = useState({
-    arabic: "",
-    translation: "",
-    context: "",
-  });
+  const [editingSaying, setEditingSaying] = useState<SayingData | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleAddSaying = () => {
-    if (!newSaying.arabic || !newSaying.translation) {
+  useEffect(() => {
+    if (initialData) setSayings(initialData);
+  }, [initialData]);
+
+  const handleAddSaying = async (data: CreateSayingRequest) => {
+    if (!data.arabic || !data.translation) {
       toast.error("আরবি এবং অনুবাদ আবশ্যক");
       return;
     }
 
-    const newItem: Saying = {
-      id: String(Date.now()),
-      arabic: newSaying.arabic,
-      translation: newSaying.translation,
-      context: newSaying.context || null,
-      is_featured: false,
-      is_published: true,
-    };
+    setLoading(true);
+    try {
+      const res = await createSaying({
+        arabic: data.arabic,
+        translation: data.translation,
+        context: data.context,
+        is_featured: false,
+        is_published: true,
+      });
 
-    setSayings([newItem, ...sayings]);
-    setNewSaying({ arabic: "", translation: "", context: "" });
-    setIsAddingNew(false);
-    toast.success("নতুন বাণী যোগ করা হয়েছে");
+      if (res.success) {
+        setSayings([res.data, ...sayings]);
+        setIsAddingNew(false);
+        toast.success("নতুন বাণী যোগ করা হয়েছে");
+        router.refresh();
+      } else {
+        toast.error(res.message || "বাণী যোগ করতে ব্যর্থ");
+      }
+    } catch (error: any) {
+      toast.error("বাণী যোগ করতে ব্যর্থ: " + error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleDeleteSaying = (id: string) => {
-    setSayings(sayings.filter((s) => s.id !== id));
-    toast.success("বাণী মুছে ফেলা হয়েছে");
+  const handleUpdateSaying = async (data: CreateSayingRequest) => {
+    if (!editingSaying) return;
+    if (!data.arabic || !data.translation) {
+      toast.error("আরবি এবং অনুবাদ আবশ্যক");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await updateSaying(editingSaying._id, {
+        arabic: data.arabic,
+        translation: data.translation,
+        context: data.context,
+      });
+
+      if (res.success) {
+        setSayings(
+          sayings.map((s) => (s._id === editingSaying._id ? res.data : s)),
+        );
+        setEditingSaying(null);
+        toast.success("বাণী আপডেট হয়েছে");
+        router.refresh();
+      } else {
+        toast.error(res.message || "আপডেট ব্যর্থ");
+      }
+    } catch (error: any) {
+      toast.error("আপডেট ব্যর্থ: " + error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSetFeatured = (id: string) => {
-    setSayings(sayings.map(s => ({
-      ...s,
-      is_featured: s.id === id,
-    })));
-    toast.success("ফিচার্ড বাণী আপডেট হয়েছে");
+  const handleDeleteSaying = async (id: string) => {
+    try {
+      const res = await deleteSaying(id);
+      if (res.success) {
+        setSayings(sayings.filter((s) => s._id !== id));
+        toast.success("বাণী মুছে ফেলা হয়েছে");
+        router.refresh();
+      } else {
+        toast.error(res.message || "মুছতে ব্যর্থ");
+      }
+    } catch (error: any) {
+      toast.error("মুছতে ব্যর্থ: " + error.message);
+    }
+  };
+
+  const handleSetFeatured = async (id: string, currentStatus: boolean) => {
+    try {
+      const res = await updateSaying(id, { is_featured: !currentStatus });
+      if (res.success) {
+        setSayings(sayings.map((s) => (s._id === id ? res.data : s)));
+        toast.success("ফিচার্ড স্ট্যাটাস আপডেট হয়েছে");
+        router.refresh();
+      } else {
+        toast.error(res.message || "আপডেট ব্যর্থ");
+      }
+    } catch (error: any) {
+      toast.error("আপডেট ব্যর্থ: " + error.message);
+    }
   };
 
   const featuredSayingItem = sayings.find((s) => s.is_featured);
@@ -102,57 +147,14 @@ const SayingsManager = () => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold font-arabic">বাণী ম্যানেজমেন্ট</h2>
-          <p className="text-muted-foreground">হযরত মুজাদ্দিদের মূল্যবান বাণীসমূহ</p>
+          <p className="text-muted-foreground">
+            হযরত মুজাদ্দিদের মূল্যবান বাণীসমূহ
+          </p>
         </div>
-        <Dialog open={isAddingNew} onOpenChange={setIsAddingNew}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              নতুন বাণী
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-lg">
-            <DialogHeader>
-              <DialogTitle>নতুন বাণী যোগ করুন</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>আরবি টেক্সট</Label>
-                <Textarea
-                  value={newSaying.arabic}
-                  onChange={(e) => setNewSaying({ ...newSaying, arabic: e.target.value })}
-                  placeholder="আরবি বাণী লিখুন..."
-                  dir="rtl"
-                  className="font-arabic text-lg"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>অনুবাদ</Label>
-                <Textarea
-                  value={newSaying.translation}
-                  onChange={(e) => setNewSaying({ ...newSaying, translation: e.target.value })}
-                  placeholder="বাংলা/ইংরেজি অনুবাদ..."
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>প্রসঙ্গ/সূত্র</Label>
-                <Input
-                  value={newSaying.context}
-                  onChange={(e) => setNewSaying({ ...newSaying, context: e.target.value })}
-                  placeholder="উদাঃ মাকতুবাত থেকে"
-                />
-              </div>
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={() => setIsAddingNew(false)} className="flex-1">
-                  বাতিল
-                </Button>
-                <Button onClick={handleAddSaying} className="flex-1">
-                  যোগ করুন
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <Button onClick={() => setIsAddingNew(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          নতুন বাণী
+        </Button>
       </div>
 
       {/* Featured Saying Card */}
@@ -172,9 +174,13 @@ const SayingsManager = () => {
               <p className="text-2xl font-arabic text-center" dir="rtl">
                 {featuredSayingItem.arabic}
               </p>
-              <p className="text-lg text-center italic">"{featuredSayingItem.translation}"</p>
+              <p className="text-lg text-center italic">
+                "{featuredSayingItem.translation}"
+              </p>
               {featuredSayingItem.context && (
-                <p className="text-sm text-muted-foreground text-center">{featuredSayingItem.context}</p>
+                <p className="text-sm text-muted-foreground text-center">
+                  {featuredSayingItem.context}
+                </p>
               )}
             </div>
           </CardContent>
@@ -191,13 +197,17 @@ const SayingsManager = () => {
         </Card>
         <Card>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold">{sayings.filter(s => s.is_featured).length}</div>
+            <div className="text-2xl font-bold">
+              {sayings.filter((s) => s.is_featured).length}
+            </div>
             <p className="text-sm text-muted-foreground">ফিচার্ড</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold">{sayings.filter(s => s.is_published).length}</div>
+            <div className="text-2xl font-bold">
+              {sayings.filter((s) => s.is_published).length}
+            </div>
             <p className="text-sm text-muted-foreground">প্রকাশিত</p>
           </CardContent>
         </Card>
@@ -227,10 +237,15 @@ const SayingsManager = () => {
               </TableHeader>
               <TableBody>
                 {sayings.map((saying, index) => (
-                  <TableRow key={saying.id}>
+                  <TableRow key={saying._id}>
                     <TableCell className="font-medium">{index + 1}</TableCell>
-                    <TableCell className="font-arabic text-right max-w-[200px]" dir="rtl">
-                      {saying.arabic.length > 40 ? saying.arabic.slice(0, 40) + "..." : saying.arabic}
+                    <TableCell
+                      className="font-arabic text-right max-w-[200px]"
+                      dir="rtl"
+                    >
+                      {saying.arabic.length > 40
+                        ? saying.arabic.slice(0, 40) + "..."
+                        : saying.arabic}
                     </TableCell>
                     <TableCell className="max-w-[200px] truncate">
                       {saying.translation}
@@ -246,12 +261,26 @@ const SayingsManager = () => {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleSetFeatured(saying.id)}>
-                            <Star className="h-4 w-4 mr-2" />
-                            ফিচার্ড করুন
+                          <DropdownMenuItem
+                            onClick={() => setEditingSaying(saying)}
+                          >
+                            <Edit className="h-4 w-4 mr-2" />
+                            এডিট করুন
                           </DropdownMenuItem>
-                          <DropdownMenuItem 
-                            onClick={() => handleDeleteSaying(saying.id)}
+                          <DropdownMenuItem
+                            onClick={() =>
+                              handleSetFeatured(saying._id, saying.is_featured)
+                            }
+                          >
+                            <Star
+                              className={`h-4 w-4 mr-2 ${saying.is_featured ? "fill-yellow-500 text-yellow-500" : ""}`}
+                            />
+                            {saying.is_featured
+                              ? "ফিচার্ড বাতিল"
+                              : "ফিচার্ড করুন"}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handleDeleteSaying(saying._id)}
                             className="text-destructive"
                           >
                             <Trash2 className="h-4 w-4 mr-2" />
@@ -267,6 +296,27 @@ const SayingsManager = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Add Modal */}
+      <SayingModal
+        open={isAddingNew}
+        onOpenChange={setIsAddingNew}
+        onSave={handleAddSaying}
+        loading={loading}
+        mode="add"
+      />
+
+      {/* Edit Modal */}
+      {editingSaying && (
+        <SayingModal
+          open={!!editingSaying}
+          onOpenChange={(open) => !open && setEditingSaying(null)}
+          initialData={editingSaying}
+          onSave={handleUpdateSaying}
+          loading={loading}
+          mode="edit"
+        />
+      )}
     </div>
   );
 };

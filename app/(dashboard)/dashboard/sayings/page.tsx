@@ -1,6 +1,7 @@
 import SayingsManager from "@/components/dashboard/SayingsManager";
-import React from "react";
+import { getSayingsData } from "@/services/saying.api";
 
-export default function SayingsPage() {
-  return <SayingsManager />;
+export default async function SayingsPage() {
+  const { data } = await getSayingsData();
+  return <SayingsManager initialData={data || []} />;
 }

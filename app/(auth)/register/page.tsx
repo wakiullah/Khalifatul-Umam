@@ -1,85 +1,107 @@
 "use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useToast } from '@/hooks/use-toast';
-import { Loader2, UserPlus } from 'lucide-react';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2, UserPlus } from "lucide-react";
+import { registerUser } from "@/services/auth.api";
 
 export default function Register() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (password !== confirmPassword) {
-      console.log('Registration failed: Password mismatch');
+      console.log("Registration failed: Password mismatch");
       toast({
-        title: 'ত্রুটি',
-        description: 'পাসওয়ার্ড মিলছে না।',
-        variant: 'destructive',
+        title: "ত্রুটি",
+        description: "পাসওয়ার্ড মিলছে না।",
+        variant: "destructive",
       });
       return;
     }
 
-    if (password.length < 6) {
-      console.log('Registration failed: Password too short');
+  if (password.length < 6) {
+      console.log("Registration failed: Password too short");
       toast({
-        title: 'ত্রুটি',
-        description: 'পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।',
-        variant: 'destructive',
+        title: "ত্রুটি",
+        description: "পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।",
+        variant: "destructive",
       });
       return;
     }
 
     setIsLoading(true);
-    console.log('Registration attempt:', { email, password });
 
-    // Simulate registration
-    setTimeout(() => {
-      console.log('Registration successful');
+    try {
+      const res = await registerUser({ phone, password });
+      if (res.success) {
+        toast({
+          title: "রেজিস্ট্রেশন সফল",
+          description: "আপনার অ্যাকাউন্ট তৈরি হয়েছে। এখন লগইন করতে পারেন।",
+        });
+        router.push("/login");
+      } else {
+        toast({
+          title: "রেজিস্ট্রেশন ব্যর্থ",
+          description: res.message || "কিছু একটা ভুল হয়েছে।",
+          variant: "destructive",
+        });
+      }
+    } catch (error: any) {
       toast({
-        title: 'রেজিস্ট্রেশন সফল',
-        description: 'আপনার অ্যাকাউন্ট তৈরি হয়েছে। এখন লগইন করতে পারেন।',
+        title: "ত্রুটি",
+        description: error.message || "সার্ভারে সমস্যা হয়েছে।",
+        variant: "destructive",
       });
-      router.push('/login');
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
     <main className="min-h-screen flex flex-col">
       <Header />
-      
+
       <section className="flex-1 pt-32 pb-16 flex items-center justify-center bg-gradient-to-b from-primary/10 to-background">
         <div className="container mx-auto px-4">
           <Card className="max-w-md mx-auto">
             <CardHeader className="text-center">
-              <CardTitle className="font-display text-2xl">রেজিস্টার করুন</CardTitle>
+              <CardTitle className="font-display text-2xl">
+                রেজিস্টার করুন
+              </CardTitle>
               <CardDescription>নতুন অ্যাকাউন্ট তৈরি করুন</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="font-body text-sm font-medium text-foreground mb-2 block">
-                    ইমেইল *
+                    ফোন নম্বর *
                   </label>
                   <Input
-                    type="email"
+                    type="tel"
                     required
-                    placeholder="আপনার ইমেইল লিখুন"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="আপনার ফোন নম্বর লিখুন (01xxxxxxxxx)"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
                     disabled={isLoading}
                   />
                 </div>
@@ -109,7 +131,12 @@ export default function Register() {
                     disabled={isLoading}
                   />
                 </div>
-                <Button type="submit" variant="elegant" className="w-full" disabled={isLoading}>
+                <Button
+                  type="submit"
+                  variant="elegant"
+                  className="w-full"
+                  disabled={isLoading}
+                >
                   {isLoading ? (
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   ) : (
@@ -118,7 +145,7 @@ export default function Register() {
                   রেজিস্টার
                 </Button>
                 <p className="text-center text-sm text-muted-foreground">
-                  ইতিমধ্যে অ্যাকাউন্ট আছে?{' '}
+                  ইতিমধ্যে অ্যাকাউন্ট আছে?{" "}
                   <Link href="/login" className="text-primary hover:underline">
                     লগইন করুন
                   </Link>
@@ -128,7 +155,7 @@ export default function Register() {
           </Card>
         </div>
       </section>
-      
+
       <Footer />
     </main>
   );

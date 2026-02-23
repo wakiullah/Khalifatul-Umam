@@ -1,31 +1,47 @@
-import { CreateDownloadRequest, DownloadsResponse } from "@/type/downloads";
+"use server";
 
-export async function getDownloadsData(): Promise<DownloadsResponse > {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/dashboard/downloads`);
+import { CreateDownloadRequest, DownloadsResponse } from "@/type/downloads";
+import {
+  API_BASE_URL,
+  getPublicHeaders,
+  getAuthHeaders,
+} from "@/lib/api-client";
+
+export async function getDownloadsData(): Promise<DownloadsResponse> {
+  const res = await fetch(`${API_BASE_URL}/public/downloads`, {
+    cache: "no-store",
+  });
   return res.json();
 }
 
 export async function createDownload(data: CreateDownloadRequest) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/dashboard/downloads`, {
+  const headers = await getAuthHeaders();
+  const res = await fetch(`${API_BASE_URL}/dashboard/downloads`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
+    body: JSON.stringify(data),
+  });
+  return res.json();
+}
+
+export async function updateDownload(
+  id: string,
+  data: Partial<CreateDownloadRequest>,
+) {
+  const headers = await getAuthHeaders();
+  const res = await fetch(`${API_BASE_URL}/dashboard/downloads/${id}`, {
+    method: "PATCH",
+    headers,
     body: JSON.stringify(data),
   });
   return res.json();
 }
 
 export async function deleteDownload(id: string) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/dashboard/downloads/${id}`, {
+  const headers = await getAuthHeaders();
+  const res = await fetch(`${API_BASE_URL}/dashboard/downloads/${id}`, {
     method: "DELETE",
-  });
-  return res.json();
-}
-
-export async function updateDownload(id: string, data: Partial<CreateDownloadRequest>) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/dashboard/downloads/${id}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
+    headers,
   });
   return res.json();
 }

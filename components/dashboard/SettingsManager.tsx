@@ -1,23 +1,34 @@
 "use client";
 
-console.log("Dashboard component loaded:", "components/dashboard/SettingsManager.tsx");
+console.log(
+  "Dashboard component loaded:",
+  "components/dashboard/SettingsManager.tsx",
+);
 
 import { useState } from "react";
-import { 
-  Save, 
-  Globe, 
-  Bell, 
-  Shield, 
-  Palette, 
+import { useRouter } from "next/navigation";
+import {
+  Save,
+  Globe,
+  Bell,
+  Shield,
+  Palette,
   Database,
   Mail,
   Key,
   User,
   Moon,
   Sun,
-  Monitor
+  Monitor,
+  Loader2,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,20 +43,49 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
+import { SettingsData } from "@/type/settings";
+import { updateSettings } from "@/services/settings.api";
+import { toast } from "sonner";
 
-const SettingsManager = () => {
-  const [theme, setTheme] = useState("system");
-  
+const SettingsManager = ({ initialData }: { initialData: SettingsData }) => {
+  const router = useRouter();
+  const [settings, setSettings] = useState<SettingsData>(initialData);
+  const [loading, setLoading] = useState(false);
+
+  const handleSave = async () => {
+    setLoading(true);
+    try {
+      const res = await updateSettings({ general: settings.general });
+      if (res.success) {
+        toast.success("সেটিংস আপডেট হয়েছে");
+        router.refresh();
+      } else {
+        toast.error("আপডেট ব্যর্থ হয়েছে");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("আপডেট ব্যর্থ হয়েছে");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">সেটিংস</h1>
-          <p className="text-muted-foreground mt-1">ওয়েবসাইট কনফিগারেশন এবং সেটিংস পরিচালনা করুন</p>
+          <p className="text-muted-foreground mt-1">
+            ওয়েবসাইট কনফিগারেশন এবং সেটিংস পরিচালনা করুন
+          </p>
         </div>
-        <Button className="gap-2">
-          <Save className="h-4 w-4" />
+        <Button className="gap-2" onClick={handleSave} disabled={loading}>
+          {loading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Save className="h-4 w-4" />
+          )}
           সংরক্ষণ করুন
         </Button>
       </div>
@@ -57,7 +97,7 @@ const SettingsManager = () => {
             <Globe className="h-4 w-4" />
             <span className="hidden sm:inline">সাধারণ</span>
           </TabsTrigger>
-          <TabsTrigger value="appearance" className="gap-2">
+          {/* <TabsTrigger value="appearance" className="gap-2">
             <Palette className="h-4 w-4" />
             <span className="hidden sm:inline">অ্যাপিয়ারেন্স</span>
           </TabsTrigger>
@@ -72,7 +112,7 @@ const SettingsManager = () => {
           <TabsTrigger value="advanced" className="gap-2">
             <Database className="h-4 w-4" />
             <span className="hidden sm:inline">অ্যাডভান্সড</span>
-          </TabsTrigger>
+          </TabsTrigger> */}
         </TabsList>
 
         {/* General Settings */}
@@ -83,34 +123,87 @@ const SettingsManager = () => {
                 <Globe className="h-5 w-5" />
                 সাইট তথ্য
               </CardTitle>
-              <CardDescription>আপনার ওয়েবসাইটের মৌলিক তথ্য সম্পাদনা করুন</CardDescription>
+              <CardDescription>
+                আপনার ওয়েবসাইটের মৌলিক তথ্য সম্পাদনা করুন
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>সাইটের নাম</Label>
-                  <Input defaultValue="ইমাম রব্বানী রহ." />
+                  <Input
+                    value={settings?.general?.site_name || ""}
+                    onChange={(e) =>
+                      setSettings({
+                        ...settings,
+                        general: {
+                          ...settings.general,
+                          site_name: e.target.value,
+                        },
+                      })
+                    }
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label>ট্যাগলাইন</Label>
-                  <Input defaultValue="মুজাদ্দিদ আলফে সানী" />
+                  <Input
+                    value={settings?.general?.tagline || ""}
+                    onChange={(e) =>
+                      setSettings({
+                        ...settings,
+                        general: {
+                          ...settings.general,
+                          tagline: e.target.value,
+                        },
+                      })
+                    }
+                  />
                 </div>
               </div>
               <div className="space-y-2">
                 <Label>সাইটের বিবরণ</Label>
-                <Textarea 
-                  defaultValue="হযরত মুজাদ্দিদ আলফে সানী শায়খ আহমাদ সিরহিন্দী (রহ.) এর জীবন, শিক্ষা ও অবদান সম্পর্কে জানার প্ল্যাটফর্ম।"
+                <Textarea
+                  value={settings?.general?.description || ""}
+                  onChange={(e) =>
+                    setSettings({
+                      ...settings,
+                      general: {
+                        ...settings.general,
+                        description: e.target.value,
+                      },
+                    })
+                  }
                   className="min-h-[100px]"
                 />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>যোগাযোগ ইমেইল</Label>
-                  <Input type="email" defaultValue="info@imamrabbani.com" />
+                  <Input
+                    type="email"
+                    value={settings?.general?.contact_email || ""}
+                    onChange={(e) =>
+                      setSettings({
+                        ...settings,
+                        general: {
+                          ...settings.general,
+                          contact_email: e.target.value,
+                        },
+                      })
+                    }
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label>ভাষা</Label>
-                  <Select defaultValue="bn">
+                  <Select
+                    value={settings?.general?.language || "bn"}
+                    onValueChange={(value) =>
+                      setSettings({
+                        ...settings,
+                        general: { ...settings.general, language: value },
+                      })
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -126,7 +219,7 @@ const SettingsManager = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          {/* <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <User className="h-5 w-5" />
@@ -154,11 +247,11 @@ const SettingsManager = () => {
                 </div>
               </div>
             </CardContent>
-          </Card>
+          </Card> */}
         </TabsContent>
 
         {/* Appearance Settings */}
-        <TabsContent value="appearance" className="space-y-6">
+        {/* <TabsContent value="appearance" className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -227,10 +320,10 @@ const SettingsManager = () => {
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
+        </TabsContent> */}
 
         {/* Notification Settings */}
-        <TabsContent value="notifications" className="space-y-6">
+        {/* <TabsContent value="notifications" className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -298,10 +391,10 @@ const SettingsManager = () => {
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
+        </TabsContent> */}
 
         {/* Security Settings */}
-        <TabsContent value="security" className="space-y-6">
+        {/* <TabsContent value="security" className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -369,10 +462,10 @@ const SettingsManager = () => {
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
+        </TabsContent> */}
 
         {/* Advanced Settings */}
-        <TabsContent value="advanced" className="space-y-6">
+        {/* <TabsContent value="advanced" className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -429,7 +522,7 @@ const SettingsManager = () => {
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
+        </TabsContent> */}
       </Tabs>
     </div>
   );

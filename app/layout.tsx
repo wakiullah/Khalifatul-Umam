@@ -3,6 +3,7 @@ import { Noto_Serif_Bengali, Geist, Geist_Mono, Amiri } from "next/font/google";
 import "./globals.css";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
+import { AuthProvider } from "@/context/AuthContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,9 +21,9 @@ const notoSerifBengali = Noto_Serif_Bengali({
 });
 
 const amiri = Amiri({
-  weight: ['400', '700'],
-  subsets: ['arabic'],
-  variable: '--font-amiri',
+  weight: ["400", "700"],
+  subsets: ["arabic"],
+  variable: "--font-amiri",
 });
 
 export const metadata: Metadata = {
@@ -40,10 +41,13 @@ export default function RootLayout({
       <body
         className={`${notoSerifBengali.variable} ${geistSans.variable} ${geistMono.variable} ${amiri.variable} antialiased`}
       >
-        <TooltipProvider>
-          <Toaster />
-          {children}
-        </TooltipProvider>
+        {" "}
+        <AuthProvider>
+          <TooltipProvider>
+            <Toaster />
+            {children}
+          </TooltipProvider>
+        </AuthProvider>
       </body>
     </html>
   );
