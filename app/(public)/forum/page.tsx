@@ -10,9 +10,22 @@ const forumCategories = [
   "অন্যান্য",
 ];
 
-export default async function Forum() {
-  const { data } = await getFormPostsPublicData();
+interface ForumPageProps {
+  searchParams: Promise<{ page?: string; limit?: string }>;
+}
+
+export default async function Forum({ searchParams }: ForumPageProps) {
+  const params = await searchParams;
+  const page = parseInt(params.page || "1", 10);
+  const limit = parseInt(params.limit || "10", 3);
+
+  const response = await getFormPostsPublicData(page, limit);
+
   return (
-    <ForumPageContent initialPosts={data || []} categories={forumCategories} />
+    <ForumPageContent
+      initialPosts={response.data || []}
+      categories={forumCategories}
+      pagination={response.pagination}
+    />
   );
 }

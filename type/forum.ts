@@ -43,7 +43,7 @@ export interface CreateForumPostRequest {
 
 export interface ForumCommentData {
   _id: string;
-  postId: string;
+  postId: string | { _id: string; title: string }; // Can be populated
   content: string;
   author: string;
   status: string;

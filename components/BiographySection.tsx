@@ -1,14 +1,21 @@
 import { Calendar, MapPin, BookOpen, Award } from "lucide-react";
+import { BiographyData } from "@/type/biography";
 import { biographyData } from "@/data/siteData";
 
-const iconMap = {
+const iconMap: Record<string, any> = {
   calendar: Calendar,
   book: BookOpen,
   award: Award,
   mappin: MapPin,
 };
 
-export function BiographySection() {
+interface BiographySectionProps {
+  biography: BiographyData | null;
+}
+
+export function BiographySection({ biography }: BiographySectionProps) {
+  // Fallback to static data if API data not available
+  const data = biography || biographyData;
   return (
     <section id="biography" className="py-24 bg-background">
       <div className="container mx-auto px-4">
@@ -38,10 +45,10 @@ export function BiographySection() {
                     <span className="font-arabic text-5xl text-primary">م</span>
                   </div>
                   <p className="font-arabic text-2xl text-primary mb-2">
-                    {biographyData.arabicName}
+                    {data?.arabic_name || biographyData.arabicName}
                   </p>
                   <p className="text-muted-foreground font-body">
-                    {biographyData.englishName}
+                    {data?.english_name || biographyData.englishName}
                   </p>
                 </div>
               </div>
@@ -56,23 +63,31 @@ export function BiographySection() {
           {/* Biography Text */}
           <div>
             <h3 className="font-display text-2xl text-foreground mb-6">
-              {biographyData.fullName}
+              {data?.full_name || biographyData.fullName}
             </h3>
             <div className="space-y-4 font-body text-muted-foreground leading-relaxed">
-              {biographyData.description.map((para, index) => (
-                <p key={index}>{para}</p>
-              ))}
+              {(data?.description || biographyData.description).map(
+                (para, index) => (
+                  <p key={index}>{para}</p>
+                ),
+              )}
             </div>
 
             {/* Quick facts */}
             <div className="grid grid-cols-2 gap-4 mt-8">
               <div className="p-4 bg-cream-dark rounded-lg">
-                <span className="text-secondary text-sm font-body">পূর্ণ নাম</span>
-                <p className="text-foreground font-display mt-1">{biographyData.fullName}</p>
+                <span className="text-secondary text-sm font-body">
+                  পূর্ণ নাম
+                </span>
+                <p className="text-foreground font-display mt-1">
+                  {data?.full_name || biographyData.fullName}
+                </p>
               </div>
               <div className="p-4 bg-cream-dark rounded-lg">
                 <span className="text-secondary text-sm font-body">উপাধি</span>
-                <p className="text-foreground font-display mt-1">{biographyData.title}</p>
+                <p className="text-foreground font-display mt-1">
+                  {data?.title || biographyData.title}
+                </p>
               </div>
             </div>
           </div>
@@ -83,13 +98,14 @@ export function BiographySection() {
           <h3 className="font-display text-2xl text-foreground text-center mb-12">
             জীবনের গুরুত্বপূর্ণ ঘটনাবলী
           </h3>
-          
+
           {/* Timeline line */}
           <div className="absolute left-1/2 top-20 bottom-0 w-px bg-border hidden md:block" />
 
           <div className="space-y-8 md:space-y-0">
-            {biographyData.timeline.map((event, index) => {
-              const IconComponent = iconMap[event.iconType];
+            {(data?.timeline || biographyData.timeline).map((event, index) => {
+              const IconComponent =
+                iconMap[event.icon_type || event.iconType] || Calendar;
               return (
                 <div
                   key={event.year}
@@ -99,18 +115,28 @@ export function BiographySection() {
                 >
                   <div
                     className={`${
-                      index % 2 === 0 ? "md:text-right md:pr-12" : "md:text-left md:pl-12 md:col-start-2"
+                      index % 2 === 0
+                        ? "md:text-right md:pr-12"
+                        : "md:text-left md:pl-12 md:col-start-2"
                     }`}
                   >
                     <div className="bg-card p-6 rounded-lg shadow-card border border-border/50 hover:shadow-elegant transition-shadow duration-300">
-                      <div className={`flex items-center gap-3 mb-3 ${index % 2 === 0 ? "md:justify-end" : ""}`}>
+                      <div
+                        className={`flex items-center gap-3 mb-3 ${index % 2 === 0 ? "md:justify-end" : ""}`}
+                      >
                         <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                           <IconComponent className="w-5 h-5 text-primary" />
                         </div>
-                        <span className="text-secondary font-display text-lg">{event.year}</span>
+                        <span className="text-secondary font-display text-lg">
+                          {event.year}
+                        </span>
                       </div>
-                      <h4 className="font-display text-xl text-foreground mb-2">{event.title}</h4>
-                      <p className="font-body text-muted-foreground">{event.description}</p>
+                      <h4 className="font-display text-xl text-foreground mb-2">
+                        {event.title}
+                      </h4>
+                      <p className="font-body text-muted-foreground">
+                        {event.description}
+                      </p>
                     </div>
                   </div>
 

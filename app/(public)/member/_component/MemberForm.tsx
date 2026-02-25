@@ -18,8 +18,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, UserPlus, CheckCircle } from "lucide-react";
 import { z } from "zod";
 
-import { createMemberAction } from "@/services/members.api";
 import { MemberData } from "@/type/member";
+import { createMemberApplication } from "@/services/members.api";
 
 // Validation schema
 const memberFormSchema = z.object({
@@ -138,7 +138,7 @@ export default function MemberForm() {
     setIsSubmitting(true);
 
     try {
-      const res = await createMemberAction(formData);
+      const res = await createMemberApplication(formData);
       console.log("API Response:", res);
       if (res.success) {
         setIsSubmitted(true);
@@ -183,6 +183,7 @@ export default function MemberForm() {
               </p>
               <Button
                 variant="elegant"
+                className="cursor-pointer"
                 onClick={() => (window.location.href = "/")}
               >
                 হোমে ফিরে যান
@@ -299,7 +300,7 @@ export default function MemberForm() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="gender">লিঙ্গ *</Label>
                     <select
@@ -318,17 +319,6 @@ export default function MemberForm() {
                         {errors.gender}
                       </p>
                     )}
-                  </div>
-
-                  <div>
-                    <Label htmlFor="religion">ধর্ম</Label>
-                    <Input
-                      id="religion"
-                      name="religion"
-                      value={formData.religion}
-                      onChange={handleChange}
-                      placeholder="আপনার ধর্ম"
-                    />
                   </div>
 
                   <div>

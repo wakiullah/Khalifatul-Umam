@@ -1,13 +1,50 @@
 "use client";
 
-console.log("Dashboard component loaded:", "components/dashboard/MemberApplicationsManager.tsx");
-
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useRouter } from "next/navigation";
+import { MemberData, PaginationMeta } from "@/type/member";
+import {
+  approveMember,
+  rejectMember,
+  deleteMember,
+} from "@/services/members.api";
+import {
+  Loader2,
+  Calendar,
+  CheckCircle,
+  Trash2,
+  MapPin,
+  Star,
+  User,
+  Eye,
+  Users,
+  Clock,
+  MoreVertical,
+  XCircle,
+  UserCheck,
+  UserX,
+  Phone,
+  Mail,
+  Briefcase,
+  GraduationCap,
+  Droplet,
+} from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Table,
   TableBody,
@@ -16,466 +53,842 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { 
-  Users, 
-  Search, 
-  MoreVertical, 
-  Eye, 
-  Check, 
-  X, 
-  Clock,
-  UserPlus,
-  UserCheck,
-  UserX,
-} from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
-interface MemberApplication {
-  id: string;
-  full_name: string;
-  father_name: string;
-  mother_name: string;
-  date_of_birth: string;
-  gender: string;
-  religion: string | null;
-  nationality: string | null;
-  blood_group: string | null;
-  nid_number: string | null;
-  phone: string;
-  email: string | null;
-  present_address: string;
-  permanent_address: string;
-  occupation: string | null;
-  education: string | null;
-  reason_to_join: string | null;
-  reference_name: string | null;
-  reference_phone: string | null;
-  status: string;
-  notes: string | null;
-  applied_at: string;
-}
+export default function MemberApplicationsManager({
+  initialData,
+  meta,
+}: {
+  initialData: MemberData[];
+  meta: PaginationMeta;
+}) {
+  const router = useRouter();
+  const [members, setMembers] = useState<MemberData[]>(initialData);
+  const [isLoading, setIsLoading] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [viewingMember, setViewingMember] = useState<MemberData | null>(null);
 
-const dummyApplications: MemberApplication[] = [
-  {
-    id: "1",
-    full_name: "মোহাম্মদ আব্দুল করিম",
-    father_name: "মোহাম্মদ আবুল হোসেন",
-    mother_name: "আমিনা খাতুন",
-    date_of_birth: "1990-05-15",
-    gender: "পুরুষ",
-    religion: "ইসলাম",
-    nationality: "বাংলাদেশী",
-    blood_group: "O+",
-    nid_number: "1234567890123",
-    phone: "01712345678",
-    email: "karim@example.com",
-    present_address: "মিরপুর-১০, ঢাকা",
-    permanent_address: "সিরাজগঞ্জ সদর, সিরাজগঞ্জ",
-    occupation: "শিক্ষক",
-    education: "স্নাতকোত্তর",
-    reason_to_join: "ইসলামী জ্ঞান অর্জন ও প্রচার করতে চাই",
-    reference_name: "হাফিজ সাইফুল ইসলাম",
-    reference_phone: "01812345678",
-    status: "pending",
-    notes: null,
-    applied_at: "2024-12-20T10:30:00Z",
-  },
-  {
-    id: "2",
-    full_name: "ফাতিমা বেগম",
-    father_name: "মোহাম্মদ রফিকুল ইসলাম",
-    mother_name: "রোকেয়া খাতুন",
-    date_of_birth: "1995-08-22",
-    gender: "মহিলা",
-    religion: "ইসলাম",
-    nationality: "বাংলাদেশী",
-    blood_group: "A+",
-    nid_number: "9876543210123",
-    phone: "01612345678",
-    email: "fatima@example.com",
-    present_address: "ধানমন্ডি, ঢাকা",
-    permanent_address: "রাজশাহী সদর, রাজশাহী",
-    occupation: "গৃহিণী",
-    education: "স্নাতক",
-    reason_to_join: "দ্বীনি ইলম শিখতে চাই",
-    reference_name: null,
-    reference_phone: null,
-    status: "approved",
-    notes: "যোগ্য প্রার্থী",
-    applied_at: "2024-12-18T08:00:00Z",
-  },
-  {
-    id: "3",
-    full_name: "আহমদ হাসান",
-    father_name: "মোহাম্মদ হাসান",
-    mother_name: "সালমা বেগম",
-    date_of_birth: "1988-03-10",
-    gender: "পুরুষ",
-    religion: "ইসলাম",
-    nationality: "বাংলাদেশী",
-    blood_group: "B+",
-    nid_number: "5678901234567",
-    phone: "01512345678",
-    email: null,
-    present_address: "উত্তরা, ঢাকা",
-    permanent_address: "চট্টগ্রাম সদর, চট্টগ্রাম",
-    occupation: "ব্যবসায়ী",
-    education: "এইচএসসি",
-    reason_to_join: "সংগঠনের সেবায় নিজেকে নিয়োজিত করতে চাই",
-    reference_name: "মাওলানা আব্দুল্লাহ",
-    reference_phone: "01912345678",
-    status: "rejected",
-    notes: "অসম্পূর্ণ তথ্য",
-    applied_at: "2024-12-15T14:00:00Z",
-  },
-];
-
-export default function MemberApplicationsManager() {
-  const { toast } = useToast();
-  const [applications, setApplications] = useState<MemberApplication[]>(dummyApplications);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [selectedApplication, setSelectedApplication] = useState<MemberApplication | null>(null);
-  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
-  const [notes, setNotes] = useState("");
-
-  const updateApplicationStatus = (id: string, status: string) => {
-    setApplications(apps => 
-      apps.map(app => 
-        app.id === id ? { ...app, status, notes: notes || null } : app
-      )
-    );
-
-    toast({
-      title: "সফল",
-      description: `আবেদনের স্ট্যাটাস "${status}" এ পরিবর্তন করা হয়েছে।`,
-    });
-    
-    setIsViewDialogOpen(false);
-    setNotes("");
+  const handleApprove = async (id: string) => {
+    setIsLoading(true);
+    try {
+      const res = await approveMember(id);
+      if (res.success) {
+        setMembers(members.map((m) => (m._id === id ? res.data : m)));
+        toast.success("আবেদন অনুমোদন করা হয়েছে");
+        router.refresh();
+      } else {
+        toast.error("অনুমোদন ব্যর্থ হয়েছে");
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const deleteApplication = (id: string) => {
-    if (!confirm("আপনি কি এই আবেদনটি মুছে ফেলতে চান?")) return;
-    
-    setApplications(apps => apps.filter(app => app.id !== id));
-    toast({
-      title: "সফল",
-      description: "আবেদনটি মুছে ফেলা হয়েছে।",
-    });
+  const handleReject = async (id: string) => {
+    setIsLoading(true);
+    try {
+      const res = await rejectMember(id);
+      if (res.success) {
+        setMembers(members.map((m) => (m._id === id ? res.data : m)));
+        toast.success("আবেদন বাতিল করা হয়েছে");
+        router.refresh();
+      } else {
+        toast.error("বাতিল করা ব্যর্থ হয়েছে");
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  const handleDelete = (id: string) => {
+    setDeletingId(id);
+  };
+
+  const confirmDelete = async () => {
+    if (!deletingId) return;
+    setIsLoading(true);
+    try {
+      const res = await deleteMember(deletingId);
+      if (res.success) {
+        setMembers(members.filter((m) => m._id !== deletingId));
+        setDeletingId(null);
+        toast.success("আবেদন মুছে ফেলা হয়েছে");
+        router.refresh();
+      } else {
+        toast.error("মুছে ফেলা ব্যর্থ হয়েছে");
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const pendingMembers = members.filter((m) => m.status === "Pending");
+  const approvedMembers = members.filter((m) => m.status === "Approved");
+  const rejectedMembers = members.filter((m) => m.status === "Rejected");
 
   const getStatusBadge = (status: string) => {
-    const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-      pending: "secondary",
-      approved: "default",
-      rejected: "destructive",
+    const config = {
+      Pending: { variant: "secondary" as const, label: "অপেক্ষমাণ" },
+      Approved: { variant: "default" as const, label: "অনুমোদিত" },
+      Rejected: { variant: "destructive" as const, label: "বাতিল" },
     };
-    const labels: Record<string, string> = {
-      pending: "অপেক্ষমান",
-      approved: "অনুমোদিত",
-      rejected: "বাতিল",
-    };
-    return <Badge variant={variants[status] || "secondary"}>{labels[status] || status}</Badge>;
-  };
-
-  const filteredApplications = applications.filter(app => {
-    const matchesSearch = app.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         app.phone.includes(searchQuery) ||
-                         (app.email?.toLowerCase().includes(searchQuery.toLowerCase()));
-    const matchesStatus = statusFilter === "all" || app.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
-
-  const stats = {
-    total: applications.length,
-    pending: applications.filter(a => a.status === "pending").length,
-    approved: applications.filter(a => a.status === "approved").length,
-    rejected: applications.filter(a => a.status === "rejected").length,
+    const { variant, label } =
+      config[status as keyof typeof config] || config.Pending;
+    return <Badge variant={variant}>{label}</Badge>;
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('bn-BD', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
+    return new Date(dateString).toLocaleDateString("bn-BD", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold font-arabic">সদস্যপদ আবেদন</h1>
-        <p className="text-muted-foreground mt-1">সকল সদস্যপদ আবেদন পরিচালনা করুন</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold">সদস্যপদ আবেদন ম্যানেজমেন্ট</h2>
+          <p className="text-muted-foreground">
+            সকল সদস্যপদ আবেদন পর্যালোচনা এবং পরিচালনা করুন
+          </p>
+        </div>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
-          <CardContent className="p-4 flex items-center gap-4">
-            <div className="h-12 w-12 rounded-lg bg-blue-500/10 flex items-center justify-center">
-              <Users className="h-6 w-6 text-blue-500" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">মোট আবেদন</p>
-              <p className="text-2xl font-bold">{stats.total}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 flex items-center gap-4">
-            <div className="h-12 w-12 rounded-lg bg-yellow-500/10 flex items-center justify-center">
-              <Clock className="h-6 w-6 text-yellow-500" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">অপেক্ষমান</p>
-              <p className="text-2xl font-bold">{stats.pending}</p>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <Users className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold">{meta.total}</div>
+                <p className="text-sm text-muted-foreground">মোট আবেদন</p>
+              </div>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4 flex items-center gap-4">
-            <div className="h-12 w-12 rounded-lg bg-green-500/10 flex items-center justify-center">
-              <UserCheck className="h-6 w-6 text-green-500" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">অনুমোদিত</p>
-              <p className="text-2xl font-bold">{stats.approved}</p>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center">
+                <Clock className="h-5 w-5 text-yellow-600" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold">
+                  {pendingMembers.length}
+                </div>
+                <p className="text-sm text-muted-foreground">অপেক্ষমাণ</p>
+              </div>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4 flex items-center gap-4">
-            <div className="h-12 w-12 rounded-lg bg-red-500/10 flex items-center justify-center">
-              <UserX className="h-6 w-6 text-red-500" />
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                <UserCheck className="h-5 w-5 text-green-600" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold">
+                  {approvedMembers.length}
+                </div>
+                <p className="text-sm text-muted-foreground">অনুমোদিত</p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">বাতিল</p>
-              <p className="text-2xl font-bold">{stats.rejected}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                <UserX className="h-5 w-5 text-red-600" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold">
+                  {rejectedMembers.length}
+                </div>
+                <p className="text-sm text-muted-foreground">বাতিল</p>
+              </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Filters */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="নাম, ফোন বা ইমেইল দিয়ে খুঁজুন..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pr-10"
-              />
-            </div>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2 rounded-md border border-input bg-background text-sm"
-            >
-              <option value="all">সকল স্ট্যাটাস</option>
-              <option value="pending">অপেক্ষমান</option>
-              <option value="approved">অনুমোদিত</option>
-              <option value="rejected">বাতিল</option>
-            </select>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Applications Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>আবেদন তালিকা</CardTitle>
-          <CardDescription>মোট {filteredApplications.length}টি আবেদন পাওয়া গেছে</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {filteredApplications.length === 0 ? (
-            <div className="text-center py-12">
-              <UserPlus className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">কোনো আবেদন পাওয়া যায়নি</p>
-            </div>
-          ) : (
+      {/* Pending Applications Section */}
+      {pendingMembers.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-yellow-600" />
+              অপেক্ষমাণ আবেদন ({pendingMembers.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>নাম</TableHead>
-                  <TableHead>ফোন</TableHead>
+                  <TableHead>যোগাযোগ</TableHead>
                   <TableHead>ঠিকানা</TableHead>
                   <TableHead>আবেদনের তারিখ</TableHead>
-                  <TableHead>স্ট্যাটাস</TableHead>
-                  <TableHead></TableHead>
+                  <TableHead className="text-center">অ্যাকশন</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredApplications.map((app) => (
-                  <TableRow key={app.id}>
-                    <TableCell className="font-medium">{app.full_name}</TableCell>
-                    <TableCell>{app.phone}</TableCell>
-                    <TableCell className="max-w-[200px] truncate">{app.present_address}</TableCell>
-                    <TableCell>{formatDate(app.applied_at)}</TableCell>
-                    <TableCell>{getStatusBadge(app.status)}</TableCell>
+                {pendingMembers.map((member) => (
+                  <TableRow key={member._id}>
                     <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => {
-                            setSelectedApplication(app);
-                            setNotes(app.notes || "");
-                            setIsViewDialogOpen(true);
-                          }}>
-                            <Eye className="h-4 w-4 ml-2" />
-                            বিস্তারিত দেখুন
-                          </DropdownMenuItem>
-                          {app.status === "pending" && (
-                            <>
-                              <DropdownMenuItem onClick={() => updateApplicationStatus(app.id, "approved")}>
-                                <Check className="h-4 w-4 ml-2" />
-                                অনুমোদন করুন
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => updateApplicationStatus(app.id, "rejected")}>
-                                <X className="h-4 w-4 ml-2" />
-                                বাতিল করুন
-                              </DropdownMenuItem>
-                            </>
-                          )}
-                          <DropdownMenuItem 
-                            onClick={() => deleteApplication(app.id)}
-                            className="text-destructive"
-                          >
-                            <X className="h-4 w-4 ml-2" />
-                            মুছে ফেলুন
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center shrink-0">
+                          <User className="w-4 h-4 text-yellow-600" />
+                        </div>
+                        <div>
+                          <p className="font-medium">{member.full_name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {member.gender}
+                          </p>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm space-y-1">
+                        <div className="flex items-center gap-1">
+                          <Phone className="w-3 h-3" />
+                          {member.phone}
+                        </div>
+                        {member.email && (
+                          <div className="flex items-center gap-1 text-muted-foreground">
+                            <Mail className="w-3 h-3" />
+                            {member.email}
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="max-w-md">
+                      <p className="text-sm line-clamp-1">
+                        {member.present_address}
+                      </p>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                        <Calendar className="w-3 h-3" />
+                        {formatDate(member.createdAt)}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center justify-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setViewingMember(member)}
+                        >
+                          <Eye className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={() => handleApprove(member._id)}
+                          disabled={isLoading}
+                        >
+                          <CheckCircle className="h-3 w-3" />
+                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onClick={() => handleReject(member._id)}
+                            >
+                              <XCircle className="h-4 w-4 mr-2" />
+                              বাতিল করুন
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleDelete(member._id)}
+                              className="text-red-600"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              মুছে ফেলুন
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* View Application Dialog */}
-      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      {/* Approved Applications Section */}
+      {approvedMembers.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <UserCheck className="h-5 w-5 text-green-600" />
+              অনুমোদিত আবেদন ({approvedMembers.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>নাম</TableHead>
+                  <TableHead>যোগাযোগ</TableHead>
+                  <TableHead>ঠিকানা</TableHead>
+                  <TableHead>অনুমোদনের তারিখ</TableHead>
+                  <TableHead className="text-center">অ্যাকশন</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {approvedMembers.map((member) => (
+                  <TableRow key={member._id}>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                          <User className="w-4 h-4 text-green-600" />
+                        </div>
+                        <div>
+                          <p className="font-medium">{member.full_name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {member.gender}
+                          </p>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm space-y-1">
+                        <div className="flex items-center gap-1">
+                          <Phone className="w-3 h-3" />
+                          {member.phone}
+                        </div>
+                        {member.email && (
+                          <div className="flex items-center gap-1 text-muted-foreground">
+                            <Mail className="w-3 h-3" />
+                            {member.email}
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="max-w-md">
+                      <p className="text-sm line-clamp-1">
+                        {member.present_address}
+                      </p>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                        <Calendar className="w-3 h-3" />
+                        {formatDate(member.updatedAt)}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center justify-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setViewingMember(member)}
+                        >
+                          <Eye className="h-3 w-3" />
+                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onClick={() => handleReject(member._id)}
+                            >
+                              <XCircle className="h-4 w-4 mr-2" />
+                              বাতিল করুন
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleDelete(member._id)}
+                              className="text-red-600"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              মুছে ফেলুন
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Rejected Applications Section */}
+      {rejectedMembers.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <UserX className="h-5 w-5 text-red-600" />
+              বাতিল আবেদন ({rejectedMembers.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>নাম</TableHead>
+                  <TableHead>যোগাযোগ</TableHead>
+                  <TableHead>ঠিকানা</TableHead>
+                  <TableHead>বাতিলের তারিখ</TableHead>
+                  <TableHead className="text-center">অ্যাকশন</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {rejectedMembers.map((member) => (
+                  <TableRow key={member._id}>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                          <User className="w-4 h-4 text-red-600" />
+                        </div>
+                        <div>
+                          <p className="font-medium">{member.full_name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {member.gender}
+                          </p>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm space-y-1">
+                        <div className="flex items-center gap-1">
+                          <Phone className="w-3 h-3" />
+                          {member.phone}
+                        </div>
+                        {member.email && (
+                          <div className="flex items-center gap-1 text-muted-foreground">
+                            <Mail className="w-3 h-3" />
+                            {member.email}
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="max-w-md">
+                      <p className="text-sm line-clamp-1">
+                        {member.present_address}
+                      </p>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                        <Calendar className="w-3 h-3" />
+                        {formatDate(member.updatedAt)}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center justify-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setViewingMember(member)}
+                        >
+                          <Eye className="h-3 w-3" />
+                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onClick={() => handleApprove(member._id)}
+                            >
+                              <CheckCircle className="h-4 w-4 mr-2" />
+                              অনুমোদন করুন
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleDelete(member._id)}
+                              className="text-red-600"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              মুছে ফেলুন
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Empty State */}
+      {members.length === 0 && (
+        <Card>
+          <CardContent className="p-12 text-center">
+            <div className="max-w-md mx-auto">
+              <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+                <Users className="h-8 w-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">
+                কোনো আবেদন পাওয়া যায়নি
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                এখনও কোনো সদস্যপদ আবেদন জমা দেওয়া হয়নি।
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* View Details Modal */}
+      <Dialog
+        open={!!viewingMember}
+        onOpenChange={(open) => !open && setViewingMember(null)}
+      >
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>আবেদনের বিস্তারিত</DialogTitle>
-            <DialogDescription>
-              আবেদনকারীর সম্পূর্ণ তথ্য
-            </DialogDescription>
+            <DialogTitle className="flex items-center justify-between">
+              <span>আবেদনের বিস্তারিত তথ্য</span>
+              {viewingMember && getStatusBadge(viewingMember.status)}
+            </DialogTitle>
           </DialogHeader>
-          
-          {selectedApplication && (
+          {viewingMember && (
             <div className="space-y-6">
               {/* Personal Info */}
               <div>
-                <h3 className="font-semibold text-lg mb-3 border-b pb-2">ব্যক্তিগত তথ্য</h3>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-muted-foreground">নাম:</span>
-                    <p className="font-medium">{selectedApplication.full_name}</p>
+                <h3 className="font-semibold text-lg mb-3 pb-2 border-b">
+                  ব্যক্তিগত তথ্য
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <label className="text-xs font-medium text-gray-600 mb-1 block">
+                      সম্পূর্ণ নাম
+                    </label>
+                    <p className="text-sm font-medium">
+                      {viewingMember.full_name}
+                    </p>
                   </div>
-                  <div>
-                    <span className="text-muted-foreground">জন্ম তারিখ:</span>
-                    <p className="font-medium">{formatDate(selectedApplication.date_of_birth)}</p>
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <label className="text-xs font-medium text-gray-600 mb-1 block">
+                      লিঙ্গ
+                    </label>
+                    <p className="text-sm font-medium">
+                      {viewingMember.gender}
+                    </p>
                   </div>
-                  <div>
-                    <span className="text-muted-foreground">পিতার নাম:</span>
-                    <p className="font-medium">{selectedApplication.father_name}</p>
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <label className="text-xs font-medium text-gray-600 mb-1 block">
+                      পিতার নাম
+                    </label>
+                    <p className="text-sm font-medium">
+                      {viewingMember.father_name}
+                    </p>
                   </div>
-                  <div>
-                    <span className="text-muted-foreground">মাতার নাম:</span>
-                    <p className="font-medium">{selectedApplication.mother_name}</p>
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <label className="text-xs font-medium text-gray-600 mb-1 block">
+                      মাতার নাম
+                    </label>
+                    <p className="text-sm font-medium">
+                      {viewingMember.mother_name}
+                    </p>
                   </div>
-                  <div>
-                    <span className="text-muted-foreground">লিঙ্গ:</span>
-                    <p className="font-medium">{selectedApplication.gender}</p>
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <label className="text-xs font-medium text-gray-600 mb-1 block">
+                      জন্ম তারিখ
+                    </label>
+                    <p className="text-sm font-medium">
+                      {formatDate(viewingMember.date_of_birth)}
+                    </p>
                   </div>
-                  <div>
-                    <span className="text-muted-foreground">ধর্ম:</span>
-                    <p className="font-medium">{selectedApplication.religion || "-"}</p>
-                  </div>
+                  {viewingMember.blood_group && (
+                    <div className="p-3 bg-gray-50 rounded-lg">
+                      <label className="text-xs font-medium text-gray-600 flex items-center gap-1 mb-1">
+                        <Droplet className="w-3 h-3" />
+                        রক্তের গ্রুপ
+                      </label>
+                      <p className="text-sm font-medium">
+                        {viewingMember.blood_group}
+                      </p>
+                    </div>
+                  )}
+                  {viewingMember.religion && (
+                    <div className="p-3 bg-gray-50 rounded-lg">
+                      <label className="text-xs font-medium text-gray-600 mb-1 block">
+                        ধর্ম
+                      </label>
+                      <p className="text-sm font-medium">
+                        {viewingMember.religion}
+                      </p>
+                    </div>
+                  )}
+                  {viewingMember.nationality && (
+                    <div className="p-3 bg-gray-50 rounded-lg">
+                      <label className="text-xs font-medium text-gray-600 mb-1 block">
+                        জাতীয়তা
+                      </label>
+                      <p className="text-sm font-medium">
+                        {viewingMember.nationality}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 
               {/* Contact Info */}
               <div>
-                <h3 className="font-semibold text-lg mb-3 border-b pb-2">যোগাযোগ</h3>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-muted-foreground">মোবাইল:</span>
-                    <p className="font-medium">{selectedApplication.phone}</p>
+                <h3 className="font-semibold text-lg mb-3 pb-2 border-b">
+                  যোগাযোগের তথ্য
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <label className="text-xs font-medium text-gray-600 flex items-center gap-1 mb-1">
+                      <Phone className="w-3 h-3" />
+                      ফোন
+                    </label>
+                    <p className="text-sm font-medium">{viewingMember.phone}</p>
                   </div>
-                  <div>
-                    <span className="text-muted-foreground">ইমেইল:</span>
-                    <p className="font-medium">{selectedApplication.email || "-"}</p>
+                  {viewingMember.email && (
+                    <div className="p-3 bg-gray-50 rounded-lg">
+                      <label className="text-xs font-medium text-gray-600 flex items-center gap-1 mb-1">
+                        <Mail className="w-3 h-3" />
+                        ইমেইল
+                      </label>
+                      <p className="text-sm font-medium">
+                        {viewingMember.email}
+                      </p>
+                    </div>
+                  )}
+                  {viewingMember.nid_number && (
+                    <div className="p-3 bg-gray-50 rounded-lg col-span-2">
+                      <label className="text-xs font-medium text-gray-600 mb-1 block">
+                        জাতীয় পরিচয়পত্র নম্বর
+                      </label>
+                      <p className="text-sm font-medium">
+                        {viewingMember.nid_number}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Address Info */}
+              <div>
+                <h3 className="font-semibold text-lg mb-3 pb-2 border-b">
+                  ঠিকানা
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <label className="text-xs font-medium text-gray-600 flex items-center gap-1 mb-1">
+                      <MapPin className="w-3 h-3" />
+                      বর্তমান ঠিকানা
+                    </label>
+                    <p className="text-sm">{viewingMember.present_address}</p>
                   </div>
-                  <div className="col-span-2">
-                    <span className="text-muted-foreground">বর্তমান ঠিকানা:</span>
-                    <p className="font-medium">{selectedApplication.present_address}</p>
-                  </div>
-                  <div className="col-span-2">
-                    <span className="text-muted-foreground">স্থায়ী ঠিকানা:</span>
-                    <p className="font-medium">{selectedApplication.permanent_address}</p>
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <label className="text-xs font-medium text-gray-600 flex items-center gap-1 mb-1">
+                      <MapPin className="w-3 h-3" />
+                      স্থায়ী ঠিকানা
+                    </label>
+                    <p className="text-sm">{viewingMember.permanent_address}</p>
                   </div>
                 </div>
               </div>
 
-              {/* Notes */}
-              <div>
-                <h3 className="font-semibold text-lg mb-3 border-b pb-2">নোট</h3>
-                <Textarea
-                  placeholder="আবেদন সম্পর্কে নোট লিখুন..."
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  rows={3}
-                />
-              </div>
-
-              {/* Actions */}
-              {selectedApplication.status === "pending" && (
-                <div className="flex gap-3 pt-4 border-t">
-                  <Button 
-                    variant="default" 
-                    className="flex-1"
-                    onClick={() => updateApplicationStatus(selectedApplication.id, "approved")}
-                  >
-                    <Check className="h-4 w-4 mr-2" />
-                    অনুমোদন করুন
-                  </Button>
-                  <Button 
-                    variant="destructive" 
-                    className="flex-1"
-                    onClick={() => updateApplicationStatus(selectedApplication.id, "rejected")}
-                  >
-                    <X className="h-4 w-4 mr-2" />
-                    বাতিল করুন
-                  </Button>
+              {/* Professional Info */}
+              {(viewingMember.occupation || viewingMember.education) && (
+                <div>
+                  <h3 className="font-semibold text-lg mb-3 pb-2 border-b">
+                    পেশাগত তথ্য
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    {viewingMember.occupation && (
+                      <div className="p-3 bg-gray-50 rounded-lg">
+                        <label className="text-xs font-medium text-gray-600 flex items-center gap-1 mb-1">
+                          <Briefcase className="w-3 h-3" />
+                          পেশা
+                        </label>
+                        <p className="text-sm font-medium">
+                          {viewingMember.occupation}
+                        </p>
+                      </div>
+                    )}
+                    {viewingMember.education && (
+                      <div className="p-3 bg-gray-50 rounded-lg">
+                        <label className="text-xs font-medium text-gray-600 flex items-center gap-1 mb-1">
+                          <GraduationCap className="w-3 h-3" />
+                          শিক্ষাগত যোগ্যতা
+                        </label>
+                        <p className="text-sm font-medium">
+                          {viewingMember.education}
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
+
+              {/* Additional Info */}
+              {(viewingMember.reason_to_join ||
+                viewingMember.reference_name) && (
+                <div>
+                  <h3 className="font-semibold text-lg mb-3 pb-2 border-b">
+                    অতিরিক্ত তথ্য
+                  </h3>
+                  <div className="space-y-4">
+                    {viewingMember.reason_to_join && (
+                      <div className="p-4 bg-gray-50 rounded-lg">
+                        <label className="text-xs font-medium text-gray-600 mb-2 block">
+                          যোগদানের কারণ
+                        </label>
+                        <p className="text-sm leading-relaxed">
+                          {viewingMember.reason_to_join}
+                        </p>
+                      </div>
+                    )}
+                    {viewingMember.reference_name && (
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="p-3 bg-gray-50 rounded-lg">
+                          <label className="text-xs font-medium text-gray-600 mb-1 block">
+                            রেফারেন্সের নাম
+                          </label>
+                          <p className="text-sm font-medium">
+                            {viewingMember.reference_name}
+                          </p>
+                        </div>
+                        {viewingMember.reference_phone && (
+                          <div className="p-3 bg-gray-50 rounded-lg">
+                            <label className="text-xs font-medium text-gray-600 mb-1 block">
+                              রেফারেন্সের ফোন
+                            </label>
+                            <p className="text-sm font-medium">
+                              {viewingMember.reference_phone}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Actions */}
+              <div className="flex justify-end gap-2 pt-4 border-t">
+                {viewingMember.status === "Pending" && (
+                  <>
+                    <Button
+                      onClick={() => {
+                        handleApprove(viewingMember._id);
+                        setViewingMember(null);
+                      }}
+                      disabled={isLoading}
+                    >
+                      {isLoading && (
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      )}
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      অনুমোদন করুন
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        handleReject(viewingMember._id);
+                        setViewingMember(null);
+                      }}
+                      disabled={isLoading}
+                    >
+                      {isLoading && (
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      )}
+                      <XCircle className="h-4 w-4 mr-2" />
+                      বাতিল করুন
+                    </Button>
+                  </>
+                )}
+                {viewingMember.status === "Approved" && (
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      handleReject(viewingMember._id);
+                      setViewingMember(null);
+                    }}
+                    disabled={isLoading}
+                  >
+                    {isLoading && (
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    )}
+                    <XCircle className="h-4 w-4 mr-2" />
+                    বাতিল করুন
+                  </Button>
+                )}
+                {viewingMember.status === "Rejected" && (
+                  <Button
+                    onClick={() => {
+                      handleApprove(viewingMember._id);
+                      setViewingMember(null);
+                    }}
+                    disabled={isLoading}
+                  >
+                    {isLoading && (
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    )}
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    অনুমোদন করুন
+                  </Button>
+                )}
+                <Button
+                  variant="destructive"
+                  onClick={() => {
+                    handleDelete(viewingMember._id);
+                    setViewingMember(null);
+                  }}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  মুছে ফেলুন
+                </Button>
+              </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={!!deletingId}
+        onOpenChange={(open) => !open && setDeletingId(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>আপনি কি নিশ্চিত?</DialogTitle>
+            <DialogDescription>
+              আপনি কি নিশ্চিত যে আপনি এই আবেদনটি মুছে ফেলতে চান? এই ক্রিয়াটি
+              ফিরিয়ে আনা যাবে না।
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 mt-4">
+            <Button variant="outline" onClick={() => setDeletingId(null)}>
+              বাতিল
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmDelete}
+              disabled={isLoading}
+            >
+              {isLoading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              মুছে ফেলুন
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

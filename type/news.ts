@@ -23,6 +23,9 @@ export interface NewsResponse {
 export interface NewsListResponse {
   success: boolean;
   count?: number;
+  total?: number;
+  page?: number;
+  pages?: number;
   message?: string;
   data: NewsData[];
 }

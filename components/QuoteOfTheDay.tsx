@@ -6,53 +6,67 @@ import { Button } from "@/components/ui/button";
 import { RefreshCw, Share2, BookOpen } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { quotesOfTheDay } from "@/data/siteData";
+import { SayingData } from "@/type/saying";
 
-export function QuoteOfTheDay() {
-  const [currentQuote, setCurrentQuote] = useState(quotesOfTheDay[0]);
+interface QuoteOfTheDayProps {
+  sayings: SayingData[];
+}
+
+export function QuoteOfTheDay({ sayings }: QuoteOfTheDayProps) {
+  // Use published sayings or fallback to static data
+  const availableQuotes =
+    sayings.filter((s) => s.is_published).length > 0
+      ? sayings.filter((s) => s.is_published)
+      : quotesOfTheDay;
+
+  const [currentQuote, setCurrentQuote] = useState(availableQuotes[0]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     // Set initial quote based on day of year
-    const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
-    setCurrentQuote(quotesOfTheDay[dayOfYear % quotesOfTheDay.length]);
+    const dayOfYear = Math.floor(
+      (Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) /
+        86400000,
+    );
+    setCurrentQuote(availableQuotes[dayOfYear % availableQuotes.length]);
   }, []);
 
   const refreshQuote = () => {
-    console.log('Refreshing quote');
+    console.log("Refreshing quote");
     setIsRefreshing(true);
     setTimeout(() => {
-      const randomIndex = Math.floor(Math.random() * quotesOfTheDay.length);
-      const newQuote = quotesOfTheDay[randomIndex];
-      console.log('New quote selected:', newQuote);
+      const randomIndex = Math.floor(Math.random() * availableQuotes.length);
+      const newQuote = availableQuotes[randomIndex];
+      console.log("New quote selected:", newQuote);
       setCurrentQuote(newQuote);
       setIsRefreshing(false);
     }, 500);
   };
 
   const shareQuote = async () => {
-    const shareText = `"${currentQuote.translation}"\n\n— হযরত মুজাদ্দিদে আলফে সানী\n${currentQuote.source}`;
-    console.log('Sharing quote:', shareText);
-    
+    const shareText = `"${currentQuote.translation}"\n\n— সাইয়িদুনা হযরত খলিফাতুল উমাম আলাইহিস সালাম`;
+    console.log("Sharing quote:", shareText);
+
     if (navigator.share) {
       try {
         await navigator.share({
           title: "মুজাদ্দিদে আলফে সানীর বাণী",
           text: shareText,
         });
-        console.log('Quote shared via native share');
+        console.log("Quote shared via native share");
       } catch (err) {
-        console.log('Native share failed, copying to clipboard');
+        console.log("Native share failed, copying to clipboard");
         copyToClipboard(shareText);
       }
     } else {
-      console.log('Native share not available, copying to clipboard');
+      console.log("Native share not available, copying to clipboard");
       copyToClipboard(shareText);
     }
   };
 
   const copyToClipboard = (text: string) => {
-    console.log('Copying to clipboard:', text);
+    console.log("Copying to clipboard:", text);
     navigator.clipboard.writeText(text);
     toast({
       title: "ক্লিপবোর্ডে কপি হয়েছে",
@@ -63,7 +77,7 @@ export function QuoteOfTheDay() {
   return (
     <section className="py-16 bg-background">
       <div className="container mx-auto px-4">
-        <Card className="max-w-3xl mx-auto border-secondary/30 shadow-gold overflow-hidden">
+        <Card className="max-w-3xl mx-auto border-secondary/30 shadow-gold overflow-hidden pt-0">
           <CardContent className="p-0">
             {/* Header */}
             <div className="bg-gradient-to-r from-primary to-primary/90 p-6 text-center">
@@ -73,34 +87,38 @@ export function QuoteOfTheDay() {
                   আজকের বাণী
                 </span>
               </div>
-              <span className="font-arabic text-secondary text-lg text-arabic">حكمة اليوم</span>
+              <span className="font-arabic text-secondary text-lg text-arabic">
+                حكمة اليوم
+              </span>
             </div>
-            
+
             {/* Quote Content */}
-            <div className={`p-8 md:p-12 text-center transition-opacity duration-300 ${isRefreshing ? 'opacity-50' : 'opacity-100'}`}>
+            <div
+              className={`p-8 md:p-12 text-center transition-opacity duration-300 ${isRefreshing ? "opacity-50" : "opacity-100"}`}
+            >
               {/* Arabic Quote */}
               <p className="font-arabic text-2xl md:text-3xl text-foreground leading-relaxed mb-6 direction-rtl text-arabic">
                 "{currentQuote.arabic}"
               </p>
-              
+
               {/* Decorative Divider */}
               <div className="flex items-center justify-center gap-4 my-6">
                 <div className="h-px w-16 bg-gradient-to-r from-transparent to-secondary" />
                 <span className="text-secondary">✦</span>
                 <div className="h-px w-16 bg-gradient-to-l from-transparent to-secondary" />
               </div>
-              
+
               {/* Translation */}
               <p className="font-body text-lg md:text-xl text-foreground/90 italic leading-relaxed mb-4">
                 "{currentQuote.translation}"
               </p>
-              
+
               {/* Source */}
               <p className="font-body text-sm text-muted-foreground">
                 — {currentQuote.source}
               </p>
             </div>
-            
+
             {/* Actions */}
             <div className="border-t border-border p-4 flex justify-center gap-4">
               <Button
@@ -110,7 +128,9 @@ export function QuoteOfTheDay() {
                 disabled={isRefreshing}
                 className="text-muted-foreground hover:text-primary"
               >
-                <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+                <RefreshCw
+                  className={`w-4 h-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`}
+                />
                 নতুন বাণী
               </Button>
               <Button

@@ -32,7 +32,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import { ForumPostData, ForumCommentData } from "@/type/forum";
+import { ForumPostData, ForumCommentData, Pagination } from "@/type/forum";
 import {
   createForumPost,
   addForumPostComment,
@@ -40,17 +40,22 @@ import {
   addForumPostReaction,
 } from "@/services/forum.api";
 import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 interface ForumPageContentProps {
   initialPosts: ForumPostData[];
   categories: string[];
+  pagination: Pagination;
 }
 
 export default function ForumPageContent({
   initialPosts,
   categories,
+  pagination,
 }: ForumPageContentProps) {
   const { toast } = useToast();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [posts, setPosts] = useState<ForumPostData[]>(initialPosts);
   const [comments, setComments] = useState<Record<string, ForumCommentData[]>>(
@@ -70,7 +75,6 @@ export default function ForumPageContent({
     category: "General",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const router = useRouter();
 
   console.log("Initial posts:", initialPosts);
 
@@ -132,7 +136,7 @@ export default function ForumPageContent({
         title: newPostForm.title,
         content: newPostForm.content,
         category: newPostForm.category,
-        author: user.phone || "User", // API expects string author
+        author: user.name || "User", // API expects string author
       });
 
       if (res.success) {
@@ -172,7 +176,7 @@ export default function ForumPageContent({
       const res = await addForumPostComment(
         postId,
         newComment[postId],
-        user.phone || "User",
+        user.name || "User",
       );
 
       if (res.success) {
@@ -221,7 +225,7 @@ export default function ForumPageContent({
       const res = await addForumPostReaction(
         postId,
         reactionType,
-        user.phone || "User",
+        user.name || "User",
       );
 
       if (res.success) {
@@ -246,6 +250,13 @@ export default function ForumPageContent({
       month: "long",
       day: "numeric",
     });
+  };
+
+  const handlePageChange = (page: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", String(page));
+    router.push(`?${params.toString()}`, { scroll: false });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
@@ -371,7 +382,7 @@ export default function ForumPageContent({
                   className="w-full sm:w-auto"
                 >
                   <LogOut className="w-4 h-4 mr-2" />
-                  লগআউট ({user.phone || user.email?.split("@")[0] || "User"})
+                  লগআউট ({user.name || "User"})
                 </Button>
               </>
             ) : (
@@ -381,7 +392,7 @@ export default function ForumPageContent({
                 asChild
                 className="w-full sm:w-auto"
               >
-                <Link href="/login">
+                <Link href="/login?from=/forum">
                   <User className="w-4 h-4 mr-2" />
                   লগইন করুন
                 </Link>
@@ -465,7 +476,7 @@ export default function ForumPageContent({
                       <Button
                         variant="ghost"
                         size="sm"
-                        className={`text-muted-foreground hover:text-primary px-2 sm:px-3 hover:bg-transparent cursor-pointer ${
+                        className={`text-muted-foreground hover:text-primary  gap-1 px-2 sm:px-3 hover:bg-transparent cursor-pointer ${
                           post.userReaction === "like"
                             ? "text-primary font-semibold"
                             : ""
@@ -475,12 +486,12 @@ export default function ForumPageContent({
                         <ThumbsUp
                           className={`w-4 h-4 mr-1 ${post.userReaction === "like" ? "fill-current" : ""}`}
                         />
-                        লাইক ({post.likeCount || 0})
+                        {post.likeCount || 0}
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className={`text-muted-foreground hover:text-primary px-2 sm:px-3 hover:bg-transparent cursor-pointer ${
+                        className={`text-muted-foreground hover:text-primary px-2 gap-1 sm:px-3 hover:bg-transparent cursor-pointer ${
                           post.userReaction === "unlike"
                             ? "text-primary font-semibold"
                             : ""
@@ -490,16 +501,16 @@ export default function ForumPageContent({
                         <ThumbsDown
                           className={`w-4 h-4 mr-1 ${post.userReaction === "unlike" ? "fill-current" : ""}`}
                         />
-                        ডিসলাইক ({post.unlikeCount || 0})
+                        {post.unlikeCount || 0}
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-muted-foreground hover:text-primary px-2 sm:px-3 hover:bg-transparent cursor-pointer"
+                        className="text-muted-foreground hover:text-primary px-2 gap-1 sm:px-3 hover:bg-transparent cursor-pointer"
                         onClick={() => handleExpandPost(post._id)}
                       >
                         <MessageCircle className="w-4 h-4 mr-1" />
-                        {post.commentsCount} মন্তব্য
+                        {post.commentsCount}
                         {expandedPost === post._id ? (
                           <ChevronUp className="w-4 h-4 ml-1" />
                         ) : (
@@ -592,6 +603,115 @@ export default function ForumPageContent({
               ))
             )}
           </div>
+
+          {/* Pagination */}
+          {pagination && pagination.totalPages > 1 && (
+            <div className="max-w-4xl mx-auto mt-8">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-card border border-border rounded-lg">
+                {/* Page Info */}
+                <div className="text-sm text-muted-foreground">
+                  পৃষ্ঠা {pagination.currentPage} / {pagination.totalPages} (মোট{" "}
+                  {pagination.totalItems} টি পোস্ট)
+                </div>
+
+                {/* Pagination Buttons */}
+                <div className="flex items-center gap-2">
+                  {/* First Page */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(1)}
+                    disabled={pagination.currentPage === 1}
+                  >
+                    প্রথম
+                  </Button>
+
+                  {/* Previous Page */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      handlePageChange(Math.max(1, pagination.currentPage - 1))
+                    }
+                    disabled={pagination.currentPage === 1}
+                  >
+                    পূর্ববর্তী
+                  </Button>
+
+                  {/* Page Numbers */}
+                  <div className="hidden sm:flex items-center gap-1">
+                    {Array.from(
+                      { length: pagination.totalPages },
+                      (_, i) => i + 1,
+                    )
+                      .filter((page) => {
+                        const current = pagination.currentPage;
+                        return (
+                          page === 1 ||
+                          page === pagination.totalPages ||
+                          (page >= current - 1 && page <= current + 1)
+                        );
+                      })
+                      .map((page, idx, arr) => {
+                        // Show ellipsis
+                        if (idx > 0 && page - arr[idx - 1] > 1) {
+                          return (
+                            <span
+                              key={`ellipsis-${page}`}
+                              className="px-2 text-muted-foreground"
+                            >
+                              ...
+                            </span>
+                          );
+                        }
+                        return (
+                          <Button
+                            key={page}
+                            variant={
+                              pagination.currentPage === page
+                                ? "elegant"
+                                : "outline"
+                            }
+                            size="sm"
+                            onClick={() => handlePageChange(page)}
+                            className="min-w-[2.5rem] cursor-pointer"
+                          >
+                            {page}
+                          </Button>
+                        );
+                      })}
+                  </div>
+
+                  {/* Next Page */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      handlePageChange(
+                        Math.min(
+                          pagination.totalPages,
+                          pagination.currentPage + 1,
+                        ),
+                      )
+                    }
+                    disabled={!pagination.hasMore}
+                  >
+                    পরবর্তী
+                  </Button>
+
+                  {/* Last Page */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(pagination.totalPages)}
+                    disabled={pagination.currentPage === pagination.totalPages}
+                  >
+                    শেষ
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </section>
     </>

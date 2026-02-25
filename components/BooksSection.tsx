@@ -1,8 +1,25 @@
 import { BookOpen, ExternalLink } from "lucide-react";
 import { Button } from "./ui/button";
 import { booksData } from "@/data/siteData";
+import { BookData } from "@/type/book";
 
-export function BooksSection() {
+interface BooksSectionProps {
+  books: BookData[];
+}
+
+export function BooksSection({ books }: BooksSectionProps) {
+  // Filter published books, fallback to static data
+  const publishedBooks =
+    books.filter((b) => b.is_published).length > 0
+      ? books.filter((b) => b.is_published)
+      : (booksData as any);
+
+  const featuredBooks = publishedBooks.filter(
+    (b: any) => b.is_featured || b.featured,
+  );
+  const otherBooks = publishedBooks.filter(
+    (b: any) => !(b.is_featured || b.featured),
+  );
   return (
     <section id="books" className="py-24 bg-cream-dark">
       <div className="container mx-auto px-4">
@@ -20,13 +37,14 @@ export function BooksSection() {
             <span className="w-12 h-px bg-secondary" />
           </div>
           <p className="font-body text-muted-foreground max-w-2xl mx-auto mt-6">
-            যে পাণ্ডিত্যপূর্ণ রচনাবলী জ্ঞান ও আধ্যাত্মিকতার সন্ধানীদের পথ দেখাতে থাকে
+            যে পাণ্ডিত্যপূর্ণ রচনাবলী জ্ঞান ও আধ্যাত্মিকতার সন্ধানীদের পথ দেখাতে
+            থাকে
           </p>
         </div>
 
         {/* Featured Book */}
-        {booksData.filter(b => b.featured).map((book) => (
-          <div key={book.title} className="mb-12">
+        {featuredBooks.map((book: any) => (
+          <div key={book._id || book.title} className="mb-12">
             <div className="bg-primary rounded-lg p-8 md:p-12 grid md:grid-cols-2 gap-8 items-center">
               {/* Book Visual */}
               <div className="relative">
@@ -34,7 +52,7 @@ export function BooksSection() {
                   <div className="absolute inset-4 border-2 border-primary/20 rounded flex flex-col items-center justify-center p-6">
                     <BookOpen className="w-16 h-16 text-primary/80 mb-4" />
                     <p className="font-arabic text-2xl text-primary text-center leading-loose">
-                      {book.arabicTitle}
+                      {book.arabic_title || book.arabicTitle}
                     </p>
                     <p className="font-display text-primary/80 text-center mt-2 text-sm">
                       {book.title}
@@ -54,7 +72,7 @@ export function BooksSection() {
                   {book.title}
                 </h3>
                 <p className="font-arabic text-xl text-secondary mb-6">
-                  {book.arabicTitle}
+                  {book.arabic_title || book.arabicTitle}
                 </p>
                 <p className="font-body text-primary-foreground/80 leading-relaxed mb-6">
                   {book.description}
@@ -78,9 +96,9 @@ export function BooksSection() {
 
         {/* Other Books Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {booksData.filter(b => !b.featured).map((book) => (
+          {otherBooks.map((book: any) => (
             <div
-              key={book.title}
+              key={book._id || book.title}
               className="group bg-card rounded-lg p-6 shadow-card border border-border/50 hover:shadow-elegant transition-all duration-300"
             >
               {/* Icon Header */}
@@ -98,7 +116,7 @@ export function BooksSection() {
                 {book.title}
               </h3>
               <p className="font-arabic text-secondary text-lg mb-3">
-                {book.arabicTitle}
+                {book.arabicTitle || book.arabic_title}
               </p>
 
               {/* Description */}

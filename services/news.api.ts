@@ -12,8 +12,15 @@ import {
   getAuthHeaders,
 } from "@/lib/api-client";
 
-export async function getNewsData(): Promise<NewsListResponse> {
-  const res = await fetch(`${API_BASE_URL}/public/news`, { cache: "no-store" });
+export async function getNewsData(
+  page: number = 1,
+  limit: number = 2,
+): Promise<NewsListResponse> {
+  console.log("Fetching news data for page:", page, "with limit:", limit);
+  const res = await fetch(
+    `${API_BASE_URL}/public/news?page=${page}&limit=${limit}`,
+    { cache: "no-store" },
+  );
   return res.json();
 }
 

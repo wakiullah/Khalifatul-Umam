@@ -18,6 +18,21 @@ export async function getAuthHeaders(): Promise<HeadersInit> {
   };
 }
 
+export async function getAuthHeadersWithOptionalToken(): Promise<HeadersInit> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token")?.value;
+
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  return headers;
+}
+
 /**
  * Get standard headers without authentication
  * Used for public API routes

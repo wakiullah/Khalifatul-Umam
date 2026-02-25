@@ -19,6 +19,7 @@ import { Loader2, UserPlus } from "lucide-react";
 import { registerUser } from "@/services/auth.api";
 
 export default function Register() {
+  const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -39,7 +40,7 @@ export default function Register() {
       return;
     }
 
-  if (password.length < 6) {
+    if (password.length < 6) {
       console.log("Registration failed: Password too short");
       toast({
         title: "ত্রুটি",
@@ -52,7 +53,9 @@ export default function Register() {
     setIsLoading(true);
 
     try {
-      const res = await registerUser({ phone, password });
+      console.log("Registration request:", { name, phone, password });
+      const res = await registerUser({ name, phone, password });
+      console.log("Registration response:", res);
       if (res.success) {
         toast({
           title: "রেজিস্ট্রেশন সফল",
@@ -92,6 +95,19 @@ export default function Register() {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="font-body text-sm font-medium text-foreground mb-2 block">
+                    নাম *
+                  </label>
+                  <Input
+                    type="text"
+                    required
+                    placeholder="আপনার নাম লিখুন"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    disabled={isLoading}
+                  />
+                </div>
                 <div>
                   <label className="font-body text-sm font-medium text-foreground mb-2 block">
                     ফোন নম্বর *

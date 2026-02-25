@@ -1,10 +1,15 @@
-import MemberApplicationsManager from '@/components/dashboard/MemberApplicationsManager'
-import React from 'react'
+import MemberApplicationsManager from "@/components/dashboard/MemberApplicationsManager";
+import { getAllMembers } from "@/services/members.api";
 
-function page() {
-  return (
-    <><MemberApplicationsManager /></>
-  )
+export default async function MemberApplicationsPage() {
+  const membersResponse = await getAllMembers();
+  const members = membersResponse.data || [];
+  const meta = membersResponse.meta || {
+    total: 0,
+    page: 1,
+    limit: 10,
+    totalPages: 0,
+  };
+
+  return <MemberApplicationsManager initialData={members} meta={meta} />;
 }
-
-export default page

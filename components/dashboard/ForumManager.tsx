@@ -1,10 +1,25 @@
 "use client";
 
-console.log("Dashboard component loaded:", "components/dashboard/ForumManager.tsx");
-
-import { useState } from "react";
-import { Plus, Edit, Trash2, MoreVertical, Search, MessageSquare, Users, Clock, Eye, Flag, CheckCircle } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { useState, useTransition } from "react";
+import {
+  Edit,
+  Trash2,
+  MoreVertical,
+  Search,
+  MessageSquare,
+  Users,
+  Clock,
+  Eye,
+  Flag,
+  CheckCircle,
+} from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -22,7 +37,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   DropdownMenu,
@@ -40,139 +54,187 @@ import {
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { ForumPostData, ForumCommentData } from "@/type/forum";
+import {
+  deleteForumPostAdmin,
+  updateForumPostAdmin,
+  updateForumPostStatus,
+  deleteForumCommentAdmin,
+} from "@/services/admin-forum.api";
+import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
 
-const ForumManager = () => {
+interface ForumManagerProps {
+  initialPosts: ForumPostData[];
+  initialComments: ForumCommentData[];
+  stats: {
+    totalPosts: number;
+    totalComments: number;
+    activeUsers: number;
+    reportedPosts: number;
+  };
+}
+
+const ForumManager = ({
+  initialPosts,
+  initialComments,
+  stats,
+}: ForumManagerProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [selectedPost, setSelectedPost] = useState<typeof forumPosts[0] | null>(null);
+  const [selectedPost, setSelectedPost] = useState<ForumPostData | null>(null);
   const [editFormData, setEditFormData] = useState({
     title: "",
     category: "",
-    status: ""
+    content: "",
   });
-
-  // Sample forum posts data
-  const forumPosts = [
-    { 
-      id: 1, 
-      title: "মকতুবাত পড়ার সঠিক পদ্ধতি কী?", 
-      author: "আব্দুল্লাহ", 
-      date: "২০২৪-১২-১৫", 
-      category: "প্রশ্ন-উত্তর",
-      comments: 12,
-      views: 234,
-      status: "সক্রিয়"
-    },
-    { 
-      id: 2, 
-      title: "নকশবন্দী সিলসিলার বিশেষত্ব", 
-      author: "মুহাম্মদ", 
-      date: "২০২৪-১২-১৪", 
-      category: "আলোচনা",
-      comments: 8,
-      views: 156,
-      status: "সক্রিয়"
-    },
-    { 
-      id: 3, 
-      title: "ইমাম রব্বানী'র শিক্ষা আজকের প্রেক্ষাপটে", 
-      author: "ফাতিমা", 
-      date: "২০২৪-১২-১৩", 
-      category: "আলোচনা",
-      comments: 23,
-      views: 567,
-      status: "সক্রিয়"
-    },
-    { 
-      id: 4, 
-      title: "তাসাউফ শিক্ষার জন্য কোন বই পড়া উচিত?", 
-      author: "উমর", 
-      date: "২০২৪-১২-১২", 
-      category: "প্রশ্ন-উত্তর",
-      comments: 5,
-      views: 89,
-      status: "রিপোর্টেড"
-    },
-    { 
-      id: 5, 
-      title: "সিরহিন্দ শরীফ যিয়ারতের অভিজ্ঞতা", 
-      author: "খাদিজা", 
-      date: "২০২৪-১২-১১", 
-      category: "অভিজ্ঞতা",
-      comments: 15,
-      views: 345,
-      status: "সক্রিয়"
-    },
-  ];
-
-  // Sample comments data
-  const recentComments = [
-    { 
-      id: 1, 
-      content: "অত্যন্ত তথ্যবহুল পোস্ট। জাযাকাল্লাহু খাইরান।", 
-      author: "ফাতিমা", 
-      postTitle: "মকতুবাত পড়ার সঠিক পদ্ধতি কী?",
-      date: "২০২৪-১২-১৫",
-      status: "অনুমোদিত"
-    },
-    { 
-      id: 2, 
-      content: "এই বিষয়ে আরও বিস্তারিত জানতে চাই।", 
-      author: "মুহাম্মদ", 
-      postTitle: "নকশবন্দী সিলসিলার বিশেষত্ব",
-      date: "২০২৪-১২-১৪",
-      status: "পেন্ডিং"
-    },
-    { 
-      id: 3, 
-      content: "সুবহানাল্লাহ! অসাধারণ অভিজ্ঞতা শেয়ার করার জন্য ধন্যবাদ।", 
-      author: "আয়েশা", 
-      postTitle: "সিরহিন্দ শরীফ যিয়ারতের অভিজ্ঞতা",
-      date: "২০২৪-১২-১৩",
-      status: "অনুমোদিত"
-    },
-  ];
+  const [isPending, startTransition] = useTransition();
+  const { toast } = useToast();
+  const router = useRouter();
 
   const getStatusBadge = (status: string) => {
     const styles: Record<string, string> = {
-      "সক্রিয়": "bg-green-500/10 text-green-500",
-      "রিপোর্টেড": "bg-red-500/10 text-red-500",
-      "বন্ধ": "bg-gray-500/10 text-gray-500",
-      "অনুমোদিত": "bg-green-500/10 text-green-500",
-      "পেন্ডিং": "bg-yellow-500/10 text-yellow-500",
+      active: "bg-green-500/10 text-green-500",
+      reported: "bg-red-500/10 text-red-500",
+      closed: "bg-gray-500/10 text-gray-500",
+      pending: "bg-yellow-500/10 text-yellow-500",
+      approved: "bg-green-500/10 text-green-500",
     };
-    return <Badge className={styles[status] || ""}>{status}</Badge>;
+
+    const labels: Record<string, string> = {
+      active: "সক্রিয়",
+      reported: "রিপোর্টেড",
+      closed: "বন্ধ",
+      pending: "পেন্ডিং",
+      approved: "অনুমোদিত",
+    };
+
+    return (
+      <Badge className={styles[status] || ""}>{labels[status] || status}</Badge>
+    );
   };
 
-  const filteredPosts = forumPosts.filter(post => {
-    const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         post.author.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = categoryFilter === "all" || post.category === categoryFilter;
+  const filteredPosts = initialPosts.filter((post) => {
+    const matchesSearch =
+      post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      post.author.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory =
+      categoryFilter === "all" || post.category === categoryFilter;
     return matchesSearch && matchesCategory;
   });
 
-  const handleViewPost = (post: typeof forumPosts[0]) => {
+  const handleViewPost = (post: ForumPostData) => {
     setSelectedPost(post);
     setIsViewDialogOpen(true);
   };
 
-  const handleEditPost = (post: typeof forumPosts[0]) => {
+  const handleEditPost = (post: ForumPostData) => {
     setSelectedPost(post);
     setEditFormData({
       title: post.title,
       category: post.category,
-      status: post.status
+      content: post.content,
     });
     setIsEditDialogOpen(true);
   };
 
-  const handleSaveEdit = () => {
-    // UI only - would save to database in real implementation
-    setIsEditDialogOpen(false);
-    setSelectedPost(null);
+  const handleSaveEdit = async () => {
+    if (!selectedPost) return;
+
+    startTransition(async () => {
+      const result = await updateForumPostAdmin(selectedPost._id, editFormData);
+
+      if (result.success) {
+        toast({
+          title: "সফল",
+          description: "পোস্ট সফলভাবে আপডেট করা হয়েছে।",
+        });
+        setIsEditDialogOpen(false);
+        setSelectedPost(null);
+        router.refresh();
+      } else {
+        toast({
+          title: "ত্রুটি",
+          description: result.message || "পোস্ট আপডেট করতে সমস্যা হয়েছে।",
+          variant: "destructive",
+        });
+      }
+    });
+  };
+
+  const handleDeletePost = async (postId: string) => {
+    if (!confirm("আপনি কি নিশ্চিত এই পোস্টটি ডিলিট করতে চান?")) return;
+
+    startTransition(async () => {
+      const result = await deleteForumPostAdmin(postId);
+
+      if (result.success) {
+        toast({
+          title: "সফল",
+          description: "পোস্ট সফলভাবে ডিলিট করা হয়েছে।",
+        });
+        router.refresh();
+      } else {
+        toast({
+          title: "ত্রুটি",
+          description: result.message || "পোস্ট ডিলিট করতে সমস্যা হয়েছে।",
+          variant: "destructive",
+        });
+      }
+    });
+  };
+
+  const handleChangeStatus = async (postId: string, newStatus: string) => {
+    startTransition(async () => {
+      const result = await updateForumPostStatus(postId, newStatus);
+
+      if (result.success) {
+        toast({
+          title: "সফল",
+          description: "স্ট্যাটাস সফলভাবে পরিবর্তন করা হয়েছে।",
+        });
+        router.refresh();
+      } else {
+        toast({
+          title: "ত্রুটি",
+          description:
+            result.message || "স্ট্যাটাস পরিবর্তন করতে সমস্যা হয়েছে।",
+          variant: "destructive",
+        });
+      }
+    });
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    if (!confirm("আপনি কি নিশ্চিত এই মন্তব্যটি ডিলিট করতে চান?")) return;
+
+    startTransition(async () => {
+      const result = await deleteForumCommentAdmin(commentId);
+
+      if (result.success) {
+        toast({
+          title: "সফল",
+          description: "মন্তব্য সফলভাবে ডিলিট করা হয়েছে।",
+        });
+        router.refresh();
+      } else {
+        toast({
+          title: "ত্রুটি",
+          description: result.message || "মন্তব্য ডিলিট করতে সমস্যা হয়েছে।",
+          variant: "destructive",
+        });
+      }
+    });
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("bn-BD", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
   };
 
   return (
@@ -181,39 +243,10 @@ const ForumManager = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">ফোরাম ম্যানেজমেন্ট</h1>
-          <p className="text-muted-foreground mt-1">ফোরাম পোস্ট এবং মন্তব্য পরিচালনা করুন</p>
+          <p className="text-muted-foreground mt-1">
+            ফোরাম পোস্ট এবং মন্তব্য পরিচালনা করুন
+          </p>
         </div>
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="gap-2">
-              <Plus className="h-4 w-4" />
-              নতুন ক্যাটাগরি
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>নতুন ফোরাম ক্যাটাগরি</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 mt-4">
-              <div className="space-y-2">
-                <Label>ক্যাটাগরির নাম</Label>
-                <Input placeholder="ক্যাটাগরির নাম লিখুন" />
-              </div>
-              <div className="space-y-2">
-                <Label>বিবরণ</Label>
-                <Textarea placeholder="ক্যাটাগরির বিবরণ লিখুন..." />
-              </div>
-              <div className="flex justify-end gap-2 mt-6">
-                <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
-                  বাতিল
-                </Button>
-                <Button onClick={() => setIsAddDialogOpen(false)}>
-                  ক্যাটাগরি তৈরি করুন
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
       </div>
 
       {/* Stats Cards */}
@@ -223,7 +256,7 @@ const ForumManager = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">মোট পোস্ট</p>
-                <h3 className="text-2xl font-bold">{forumPosts.length}</h3>
+                <h3 className="text-2xl font-bold">{stats.totalPosts}</h3>
               </div>
               <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
                 <MessageSquare className="h-5 w-5" />
@@ -236,7 +269,7 @@ const ForumManager = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">মোট মন্তব্য</p>
-                <h3 className="text-2xl font-bold">{forumPosts.reduce((acc, p) => acc + p.comments, 0)}</h3>
+                <h3 className="text-2xl font-bold">{stats.totalComments}</h3>
               </div>
               <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-500">
                 <MessageSquare className="h-5 w-5" />
@@ -249,7 +282,7 @@ const ForumManager = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">সক্রিয় সদস্য</p>
-                <h3 className="text-2xl font-bold">৮৫৬</h3>
+                <h3 className="text-2xl font-bold">{stats.reportedPosts}</h3>
               </div>
               <div className="h-10 w-10 rounded-lg bg-green-500/10 flex items-center justify-center text-green-500">
                 <Users className="h-5 w-5" />
@@ -262,7 +295,7 @@ const ForumManager = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">রিপোর্টেড</p>
-                <h3 className="text-2xl font-bold">{forumPosts.filter(p => p.status === "রিপোর্টেড").length}</h3>
+                <h3 className="text-2xl font-bold">{stats.reportedPosts}</h3>
               </div>
               <div className="h-10 w-10 rounded-lg bg-red-500/10 flex items-center justify-center text-red-500">
                 <Flag className="h-5 w-5" />
@@ -286,14 +319,17 @@ const ForumManager = () => {
               <div className="flex flex-col md:flex-row gap-4">
                 <div className="relative flex-1">
                   <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input 
-                    placeholder="পোস্ট সার্চ করুন..." 
+                  <Input
+                    placeholder="পোস্ট সার্চ করুন..."
                     className="pr-10"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
                 </div>
-                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <Select
+                  value={categoryFilter}
+                  onValueChange={setCategoryFilter}
+                >
                   <SelectTrigger className="w-full md:w-48">
                     <SelectValue placeholder="ক্যাটাগরি ফিল্টার" />
                   </SelectTrigger>
@@ -312,7 +348,9 @@ const ForumManager = () => {
           <Card>
             <CardHeader>
               <CardTitle>ফোরাম পোস্টসমূহ</CardTitle>
-              <CardDescription>{filteredPosts.length}টি পোস্ট পাওয়া গেছে</CardDescription>
+              <CardDescription>
+                {filteredPosts.length}টি পোস্ট পাওয়া গেছে
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <Table>
@@ -330,14 +368,16 @@ const ForumManager = () => {
                 </TableHeader>
                 <TableBody>
                   {filteredPosts.map((post) => (
-                    <TableRow key={post.id}>
+                    <TableRow key={post._id}>
                       <TableCell className="font-medium max-w-[200px]">
                         <div className="truncate">{post.title}</div>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Avatar className="h-6 w-6">
-                            <AvatarFallback className="text-xs">{post.author.charAt(0)}</AvatarFallback>
+                            <AvatarFallback className="text-xs">
+                              {post.author.charAt(0)}
+                            </AvatarFallback>
                           </Avatar>
                           {post.author}
                         </div>
@@ -346,15 +386,15 @@ const ForumManager = () => {
                         <Badge variant="outline">{post.category}</Badge>
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-2 text-muted-foreground">
+                        <div className="flex items-center gap-2 text-muted-foreground text-sm">
                           <Clock className="h-4 w-4" />
-                          {post.date}
+                          {formatDate(post.createdAt)}
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
                           <MessageSquare className="h-4 w-4 text-muted-foreground" />
-                          {post.comments}
+                          {post.commentsCount}
                         </div>
                       </TableCell>
                       <TableCell>
@@ -367,24 +407,39 @@ const ForumManager = () => {
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              disabled={isPending}
+                            >
                               <MoreVertical className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleViewPost(post)}>
+                            <DropdownMenuItem
+                              onClick={() => handleViewPost(post)}
+                            >
                               <Eye className="h-4 w-4 ml-2" />
                               দেখুন
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleEditPost(post)}>
+                            <DropdownMenuItem
+                              onClick={() => handleEditPost(post)}
+                            >
                               <Edit className="h-4 w-4 ml-2" />
                               এডিট
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleChangeStatus(post._id, "closed")
+                              }
+                            >
                               <CheckCircle className="h-4 w-4 ml-2" />
                               বন্ধ করুন
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="text-destructive">
+                            <DropdownMenuItem
+                              className="text-destructive"
+                              onClick={() => handleDeletePost(post._id)}
+                            >
                               <Trash2 className="h-4 w-4 ml-2" />
                               ডিলিট
                             </DropdownMenuItem>
@@ -419,37 +474,48 @@ const ForumManager = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {recentComments.map((comment) => (
-                    <TableRow key={comment.id}>
+                  {initialComments.map((comment) => (
+                    <TableRow key={comment._id}>
                       <TableCell className="max-w-[250px]">
                         <div className="truncate">{comment.content}</div>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Avatar className="h-6 w-6">
-                            <AvatarFallback className="text-xs">{comment.author.charAt(0)}</AvatarFallback>
+                            <AvatarFallback className="text-xs">
+                              {comment.author.charAt(0)}
+                            </AvatarFallback>
                           </Avatar>
                           {comment.author}
                         </div>
                       </TableCell>
                       <TableCell className="max-w-[150px]">
-                        <div className="truncate text-muted-foreground">{comment.postTitle}</div>
+                        <div className="truncate text-muted-foreground">
+                          {typeof comment.postId === "string"
+                            ? comment.postId
+                            : comment.postId?.title ||
+                              comment.postId?._id ||
+                              "N/A"}
+                        </div>
                       </TableCell>
-                      <TableCell>{comment.date}</TableCell>
+                      <TableCell>{formatDate(comment.createdAt)}</TableCell>
                       <TableCell>{getStatusBadge(comment.status)}</TableCell>
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              disabled={isPending}
+                            >
                               <MoreVertical className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem>
-                              <CheckCircle className="h-4 w-4 ml-2" />
-                              অনুমোদন
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="text-destructive">
+                            <DropdownMenuItem
+                              className="text-destructive"
+                              onClick={() => handleDeleteComment(comment._id)}
+                            >
                               <Trash2 className="h-4 w-4 ml-2" />
                               ডিলিট
                             </DropdownMenuItem>
@@ -475,11 +541,15 @@ const ForumManager = () => {
             <div className="space-y-4 mt-4">
               <div className="flex items-center gap-3">
                 <Avatar className="h-10 w-10">
-                  <AvatarFallback>{selectedPost.author.charAt(0)}</AvatarFallback>
+                  <AvatarFallback>
+                    {selectedPost.author.charAt(0)}
+                  </AvatarFallback>
                 </Avatar>
                 <div>
                   <p className="font-medium">{selectedPost.author}</p>
-                  <p className="text-sm text-muted-foreground">{selectedPost.date}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {formatDate(selectedPost.createdAt)}
+                  </p>
                 </div>
               </div>
               <div className="space-y-2">
@@ -500,20 +570,27 @@ const ForumManager = () => {
                 <div className="text-center">
                   <div className="flex items-center justify-center gap-1 text-lg font-bold">
                     <MessageSquare className="h-4 w-4" />
-                    {selectedPost.comments}
+                    {selectedPost.commentsCount}
                   </div>
                   <p className="text-sm text-muted-foreground">মন্তব্য</p>
                 </div>
                 <div className="text-center">
-                  <div className="text-lg font-bold">{selectedPost.date}</div>
+                  <div className="text-lg font-bold">
+                    {formatDate(selectedPost.createdAt)}
+                  </div>
                   <p className="text-sm text-muted-foreground">তারিখ</p>
                 </div>
               </div>
               <div className="p-4 border rounded-lg">
-                <p className="text-muted-foreground">এই পোস্টের বিষয়বস্তু এখানে দেখানো হবে। বর্তমানে এটি শুধুমাত্র UI ডেমো।</p>
+                <p className="text-muted-foreground whitespace-pre-wrap">
+                  {selectedPost.content}
+                </p>
               </div>
               <div className="flex justify-end">
-                <Button variant="outline" onClick={() => setIsViewDialogOpen(false)}>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsViewDialogOpen(false)}
+                >
                   বন্ধ করুন
                 </Button>
               </div>
@@ -532,43 +609,56 @@ const ForumManager = () => {
             <div className="space-y-4 mt-4">
               <div className="space-y-2">
                 <Label>শিরোনাম</Label>
-                <Input 
+                <Input
                   value={editFormData.title}
-                  onChange={(e) => setEditFormData({...editFormData, title: e.target.value})}
+                  onChange={(e) =>
+                    setEditFormData({ ...editFormData, title: e.target.value })
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>বিষয়বস্তু</Label>
+                <Textarea
+                  rows={5}
+                  value={editFormData.content}
+                  onChange={(e) =>
+                    setEditFormData({
+                      ...editFormData,
+                      content: e.target.value,
+                    })
+                  }
                 />
               </div>
               <div className="space-y-2">
                 <Label>ক্যাটাগরি</Label>
-                <Select value={editFormData.category} onValueChange={(val) => setEditFormData({...editFormData, category: val})}>
+                <Select
+                  value={editFormData.category}
+                  onValueChange={(val) =>
+                    setEditFormData({ ...editFormData, category: val })
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="প্রশ্ন-উত্তর">প্রশ্ন-উত্তর</SelectItem>
-                    <SelectItem value="আলোচনা">আলোচনা</SelectItem>
-                    <SelectItem value="অভিজ্ঞতা">অভিজ্ঞতা</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>স্ট্যাটাস</Label>
-                <Select value={editFormData.status} onValueChange={(val) => setEditFormData({...editFormData, status: val})}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="সক্রিয়">সক্রিয়</SelectItem>
-                    <SelectItem value="বন্ধ">বন্ধ</SelectItem>
-                    <SelectItem value="রিপোর্টেড">রিপোর্টেড</SelectItem>
+                    <SelectItem value="General">General</SelectItem>
+                    <SelectItem value="ইবাদত">ইবাদত</SelectItem>
+                    <SelectItem value="আকিদা">আকিদা</SelectItem>
+                    <SelectItem value="সমাজ">সমাজ</SelectItem>
+                    <SelectItem value="অন্যান্য">অন্যান্য</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="flex justify-end gap-2 mt-6">
-                <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsEditDialogOpen(false)}
+                  disabled={isPending}
+                >
                   বাতিল
                 </Button>
-                <Button onClick={handleSaveEdit}>
-                  সংরক্ষণ করুন
+                <Button onClick={handleSaveEdit} disabled={isPending}>
+                  {isPending ? "সেভ হচ্ছে..." : "সেভ করুন"}
                 </Button>
               </div>
             </div>

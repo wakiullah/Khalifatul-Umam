@@ -8,7 +8,9 @@ export interface PostData {
   category: string;
   status?: string;
   views?: number;
+  is_published?: boolean;
   is_featured?: boolean;
+  read_time?: string;
   published_at?: string;
   createdAt: string;
   updatedAt: string;

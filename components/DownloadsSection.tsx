@@ -3,35 +3,54 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Download, FileText, Book, FileAudio, Languages } from "lucide-react";
 import { downloadsData } from "@/data/siteData";
+import { DownloadData } from "@/type/downloads";
 
-const iconMap = {
+const iconMap: Record<string, any> = {
   book: Book,
   file: FileText,
   audio: FileAudio,
+  pdf: FileText,
+  doc: FileText,
 };
 
-export function DownloadsSection() {
+interface DownloadsSectionProps {
+  downloads: DownloadData[];
+}
+
+export function DownloadsSection({ downloads }: DownloadsSectionProps) {
+  // Filter published downloads, fallback to static data
+  const publishedDownloads =
+    downloads.filter((d) => d.is_published).length > 0
+      ? downloads.filter((d) => d.is_published)
+      : downloadsData;
+
+  const displayDownloads = publishedDownloads.slice(0, 6);
   return (
     <section id="downloads" className="py-20 bg-background islamic-pattern">
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-16">
-          <span className="font-arabic text-xl text-secondary mb-2 block">التحميلات</span>
+          <span className="font-arabic text-xl text-secondary mb-2 block">
+            التحميلات
+          </span>
           <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
             ডাউনলোডযোগ্য সম্পদ
           </h2>
           <p className="font-body text-muted-foreground max-w-2xl mx-auto">
-            হযরত মুজাদ্দিদে আলফে সানীর শিক্ষা সম্পর্কে আপনার জ্ঞান গভীর করতে বই, প্রবন্ধ, অডিও বক্তৃতা ও গবেষণা পত্র ডাউনলোড করুন
+            হযরত মুজাদ্দিদে আলফে সানীর শিক্ষা সম্পর্কে আপনার জ্ঞান গভীর করতে বই,
+            প্রবন্ধ, অডিও বক্তৃতা ও গবেষণা পত্র ডাউনলোড করুন
           </p>
         </div>
 
         {/* Downloads Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {downloadsData.map((item, index) => {
-            const IconComponent = iconMap[item.iconType];
+          {displayDownloads.map((item, index) => {
+            const IconComponent =
+              iconMap[item.file_type?.toLowerCase() || item.iconType] ||
+              FileText;
             return (
-              <Card 
-                key={item.id}
+              <Card
+                key={item._id || item.id}
                 className="group hover:shadow-elegant transition-all duration-500 border-border/50"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
@@ -57,12 +76,15 @@ export function DownloadsSection() {
                   {/* Meta Info */}
                   <div className="flex flex-wrap gap-2 mb-4">
                     <Badge variant="outline" className="text-xs">
-                      {item.type}
+                      {item.file_type}
                     </Badge>
                     <Badge variant="outline" className="text-xs">
-                      {item.size}
+                      {item.file_size}
                     </Badge>
-                    <Badge variant="outline" className="text-xs flex items-center gap-1">
+                    <Badge
+                      variant="outline"
+                      className="text-xs flex items-center gap-1"
+                    >
                       <Languages className="w-3 h-3" />
                       {item.language}
                     </Badge>
@@ -71,9 +93,13 @@ export function DownloadsSection() {
                   {/* Download Stats & Button */}
                   <div className="flex items-center justify-between pt-4 border-t border-border/50">
                     <span className="text-xs text-muted-foreground">
-                      {item.downloads} ডাউনলোড
+                      {item.download_count} ডাউনলোড
                     </span>
-                    <Button variant="outline" size="sm" className="group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
+                    >
                       <Download className="w-4 h-4 mr-2" />
                       ডাউনলোড
                     </Button>

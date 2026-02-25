@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { NewsData, CreateNewsRequest } from "@/type/news";
 import { createNews, deleteNews, updateNews } from "@/services/news.api";
 import {
@@ -12,6 +13,8 @@ import {
   Calendar,
   Clock,
   X,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import {
   Dialog,
@@ -89,8 +92,12 @@ const Textarea = ({ label, ...props }: TextareaProps) => (
 
 export default function NewsManager({
   initialData,
+  currentPage = 1,
+  totalPages = 1,
 }: {
   initialData: NewsData[];
+  currentPage?: number;
+  totalPages?: number;
 }) {
   const router = useRouter();
   const [news, setNews] = useState<NewsData[]>(initialData);
@@ -270,6 +277,105 @@ export default function NewsManager({
           </div>
         ))}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 border-t pt-6">
+          <p className="text-sm text-gray-600">
+            পৃষ্ঠা {currentPage} / {totalPages}
+          </p>
+
+          <div className="flex items-center gap-2">
+            {currentPage > 1 ? (
+              <Link
+                href={`/dashboard/news?page=${currentPage - 1}`}
+                className="inline-flex items-center gap-1 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 text-sm font-medium transition-colors"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                পূর্ববর্তী
+              </Link>
+            ) : (
+              <button
+                disabled
+                className="inline-flex items-center gap-1 px-4 py-2 border border-gray-200 rounded-md text-gray-400 text-sm font-medium cursor-not-allowed"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                পূর্ববর্তী
+              </button>
+            )}
+
+            <div className="flex items-center gap-1">
+              {currentPage > 2 && (
+                <>
+                  <Link
+                    href="/dashboard/news?page=1"
+                    className="px-3 py-1.5 border border-gray-300 rounded hover:bg-gray-50 text-sm transition-colors"
+                  >
+                    1
+                  </Link>
+                  {currentPage > 3 && (
+                    <span className="px-2 text-gray-400">...</span>
+                  )}
+                </>
+              )}
+
+              {currentPage > 1 && (
+                <Link
+                  href={`/dashboard/news?page=${currentPage - 1}`}
+                  className="px-3 py-1.5 border border-gray-300 rounded hover:bg-gray-50 text-sm transition-colors"
+                >
+                  {currentPage - 1}
+                </Link>
+              )}
+
+              <span className="px-3 py-1.5 border border-black bg-black text-white rounded text-sm font-medium">
+                {currentPage}
+              </span>
+
+              {currentPage < totalPages && (
+                <Link
+                  href={`/dashboard/news?page=${currentPage + 1}`}
+                  className="px-3 py-1.5 border border-gray-300 rounded hover:bg-gray-50 text-sm transition-colors"
+                >
+                  {currentPage + 1}
+                </Link>
+              )}
+
+              {currentPage < totalPages - 1 && (
+                <>
+                  {currentPage < totalPages - 2 && (
+                    <span className="px-2 text-gray-400">...</span>
+                  )}
+                  <Link
+                    href={`/dashboard/news?page=${totalPages}`}
+                    className="px-3 py-1.5 border border-gray-300 rounded hover:bg-gray-50 text-sm transition-colors"
+                  >
+                    {totalPages}
+                  </Link>
+                </>
+              )}
+            </div>
+
+            {currentPage < totalPages ? (
+              <Link
+                href={`/dashboard/news?page=${currentPage + 1}`}
+                className="inline-flex items-center gap-1 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 text-sm font-medium transition-colors"
+              >
+                পরবর্তী
+                <ChevronRight className="h-4 w-4" />
+              </Link>
+            ) : (
+              <button
+                disabled
+                className="inline-flex items-center gap-1 px-4 py-2 border border-gray-200 rounded-md text-gray-400 text-sm font-medium cursor-not-allowed"
+              >
+                পরবর্তী
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {isModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm">

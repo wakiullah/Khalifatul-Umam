@@ -11,46 +11,81 @@ import { QuoteOfTheDay } from "@/components/QuoteOfTheDay";
 import { LatestNews } from "@/components/LatestNews";
 import { NewsletterSection } from "@/components/NewsletterSection";
 import { Footer } from "@/components/Footer";
+import { getBiographyData } from "@/services/biography.api";
+import { getSayingsData } from "@/services/saying.api";
+import { getBooksData } from "@/services/books.api";
+import { getGalleryData } from "@/services/gallery.api";
+import { getDownloadsData } from "@/services/downloads.api";
+import { getNewsData } from "@/services/news.api";
+import { getPostsData } from "@/services/posts.api";
 
-const HomePage = () => {
+const HomePage = async () => {
+  // Fetch all data in parallel for better performance
+  const [
+    biographyResponse,
+    sayingsResponse,
+    booksResponse,
+    galleryResponse,
+    downloadsResponse,
+    newsResponse,
+    postsResponse,
+  ] = await Promise.all([
+    getBiographyData(),
+    getSayingsData(),
+    getBooksData(),
+    getGalleryData(),
+    getDownloadsData(),
+    getNewsData(),
+    getPostsData(),
+  ]);
+
+  // Extract data with fallbacks
+  const biography = biographyResponse?.data || null;
+  const sayings = sayingsResponse?.data || [];
+  const books = booksResponse?.data || [];
+  const gallery = galleryResponse?.data || [];
+  const downloads = downloadsResponse?.data || [];
+  const news = newsResponse?.data || [];
+  const posts = postsResponse?.data || [];
+
   return (
     <main className="min-h-screen">
       <Header />
       <HeroSection />
 
       {/* Quote of the Day */}
-      <QuoteOfTheDay />
+      <QuoteOfTheDay sayings={sayings} />
 
       {/* Section Divider */}
       <div className="section-divider" />
 
-      <BiographySection />
+      <BiographySection biography={biography} />
 
       <ContributionsSection />
 
       {/* Section Divider */}
       <div className="section-divider" />
 
-      <SayingsSection />
+      <SayingsSection sayings={sayings} />
 
-      <BooksSection />
+      <BooksSection books={books} />
 
       {/* Section Divider */}
       <div className="section-divider" />
 
-      <LecturesSection />
+      <LecturesSection posts={posts} />
 
       {/* Photo Gallery */}
-      <GallerySection />
+      <GallerySection gallery={gallery} />
 
       {/* Section Divider */}
       <div className="section-divider" />
 
       {/* Downloadable Resources */}
-      <DownloadsSection />
+      <DownloadsSection downloads={downloads} />
 
       {/* Latest News */}
-      <LatestNews />
+      <LatestNews news={news} />
 
       {/* Newsletter Signup */}
       <NewsletterSection />

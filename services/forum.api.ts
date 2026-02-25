@@ -3,7 +3,7 @@
 import { cookies } from "next/headers";
 import {
   API_BASE_URL,
-  getPublicHeaders,
+  getAuthHeadersWithOptionalToken,
   getAuthHeaders,
 } from "@/lib/api-client";
 import {
@@ -13,13 +13,19 @@ import {
   ForumCommentResponse,
 } from "@/type/forum";
 
-export async function getFormPostsPublicData(): Promise<ForumPostListResponse> {
-  const headers = await getAuthHeaders();
+export async function getFormPostsPublicData(
+  page: number = 1,
+  limit: number = 3,
+): Promise<ForumPostListResponse> {
+  const headers = await getAuthHeadersWithOptionalToken();
 
-  const res = await fetch(`${API_BASE_URL}/public/forum/posts`, {
-    headers,
-    cache: "no-store",
-  });
+  const res = await fetch(
+    `${API_BASE_URL}/public/forum/posts?page=${page}&limit=${limit}`,
+    {
+      headers,
+      cache: "no-store",
+    },
+  );
   return res.json();
 }
 

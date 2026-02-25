@@ -17,6 +17,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, LogIn } from "lucide-react";
 import { loginUser } from "@/services/auth.api";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Login() {
   const [phone, setPhone] = useState("");
@@ -25,6 +26,7 @@ export default function Login() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
+  const { checkUser } = useAuth();
 
   const from = searchParams.get("from") || "/";
 
@@ -36,12 +38,17 @@ export default function Login() {
       const res = await loginUser({ phone, password });
 
       if (res.success) {
-        // টোকেন স্টোর করা (প্রয়োজন হলে কুকিতে সেট করতে পারেন)
         toast({
           title: "লগইন সফল",
           description: "স্বাগতম!",
         });
+
+        // AuthContext refresh করুন
+        await checkUser();
+
+        // Redirect করুন
         router.push(from);
+        router.refresh();
       } else {
         toast({
           title: "লগইন ব্যর্থ",
@@ -79,7 +86,7 @@ export default function Login() {
                     ফোন নম্বর *
                   </label>
                   <Input
-                    type="tel"
+                    type="number"
                     required
                     placeholder="আপনার ফোন নম্বর লিখুন (01xxxxxxxxx)"
                     value={phone}

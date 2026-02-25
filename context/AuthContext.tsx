@@ -6,6 +6,7 @@ import { getCurrentUser, logoutUser } from "@/services/auth.api";
 
 interface User {
   _id: string;
+  name: string;
   phone: string;
   role: string;
 }

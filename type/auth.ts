@@ -1,4 +1,5 @@
 export interface RegisterRequest {
+  name: string;
   phone: string;
   password: string;
 }
@@ -14,6 +15,7 @@ export interface AuthResponse {
   token?: string;
   data?: {
     _id: string;
+    name: string;
     phone: string;
     role: string;
   };

@@ -158,6 +158,10 @@
     border-color: hsl(var(--border));
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
@@ -242,6 +246,10 @@
     animation: float 6s ease-in-out infinite;
   }
 
+  .animate-slide-in-right {
+    animation: slideInRight 0.4s ease-out forwards;
+  }
+
   @keyframes fadeIn {
     from {
       opacity: 0;
@@ -271,12 +279,22 @@
       transform: translateY(-10px);
     }
   }
+
+  @keyframes slideInRight {
+    from {
+      opacity: 0;
+      transform: translateX(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
 }
 
 .text-arabic {
-  font-family: 'Amiri', serif; /* Ensure Amiri is correctly enqueued */
+  font-family: "Amiri", serif; /* Ensure Amiri is correctly enqueued */
 }
 .font-arabic {
-  font-family: 'Amiri', serif; /* Ensure Amiri is correctly enqueued */
+  font-family: "Amiri", serif; /* Ensure Amiri is correctly enqueued */
 }
-

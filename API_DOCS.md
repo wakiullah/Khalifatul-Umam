@@ -112,36 +112,47 @@
 | **Get All** | `GET`  | `/api/opinions` | শুধুমাত্র `isApproved: true` মতামতগুলো আনবে।                                   |
 | **Create**  | `POST` | `/api/opinions` | নতুন মতামত জমা দেওয়া। <br> **Body:** `{ name, email, text, rating, location }` |
 
+**Admin Endpoints:**
+
+| Action      | Method   | Endpoint                              | Description                   |
+| :---------- | :------- | :------------------------------------ | :---------------------------- |
+| **Get All** | `GET`    | `/api/dashboard/opinions`             | সব মতামত (pending + approved) |
+| **Approve** | `PATCH`  | `/api/dashboard/opinions/:id/approve` | মতামত অনুমোদন করা             |
+| **Delete**  | `DELETE` | `/api/dashboard/opinions/:id`         | মতামত মুছে ফেলা               |
+
 ---
 
 ### 9. Sayings Manager (বাণী ম্যানেজমেন্ট)
+
 **Base URL:** `/api/sayings`
 
-| Action | Method | Endpoint | Description / Payload |
-| :--- | :--- | :--- | :--- |
-| **Get All** | `GET` | `/api/sayings` | সব বাণী আনবে। |
-| **Create** | `POST` | `/api/sayings` | নতুন বাণী তৈরি। <br> **Body:** `{ arabic, translation, context }` |
-| **Edit** | `PATCH` | `/api/sayings/:id` | বাণী আপডেট বা ফিচার্ড করা। <br> **Body:** `{ is_featured: true }` |
-| **Delete** | `DELETE` | `/api/sayings/:id` | বাণী ডিলিট। |
+| Action      | Method   | Endpoint           | Description / Payload                                             |
+| :---------- | :------- | :----------------- | :---------------------------------------------------------------- |
+| **Get All** | `GET`    | `/api/sayings`     | সব বাণী আনবে।                                                     |
+| **Create**  | `POST`   | `/api/sayings`     | নতুন বাণী তৈরি। <br> **Body:** `{ arabic, translation, context }` |
+| **Edit**    | `PATCH`  | `/api/sayings/:id` | বাণী আপডেট বা ফিচার্ড করা। <br> **Body:** `{ is_featured: true }` |
+| **Delete**  | `DELETE` | `/api/sayings/:id` | বাণী ডিলিট।                                                       |
 
 ---
 
 ### 10. Users Manager (ইউজার ম্যানেজমেন্ট)
+
 **Base URL:** `/api/users`
 
-| Action | Method | Endpoint | Description / Payload |
-| :--- | :--- | :--- | :--- |
-| **Get All** | `GET` | `/api/users` | সব ইউজার আনবে। <br> **Query:** `?role=admin&search=username` |
-| **Create** | `POST` | `/api/users` | নতুন ইউজার তৈরি। <br> **Body:** `{ user_id, role }` |
-| **Update Role** | `PATCH` | `/api/users/:id` | রোল পরিবর্তন। <br> **Body:** `{ role: 'moderator' }` |
-| **Delete** | `DELETE` | `/api/users/:id` | ইউজার ডিলিট। |
+| Action          | Method   | Endpoint         | Description / Payload                                        |
+| :-------------- | :------- | :--------------- | :----------------------------------------------------------- |
+| **Get All**     | `GET`    | `/api/users`     | সব ইউজার আনবে। <br> **Query:** `?role=admin&search=username` |
+| **Create**      | `POST`   | `/api/users`     | নতুন ইউজার তৈরি। <br> **Body:** `{ user_id, role }`          |
+| **Update Role** | `PATCH`  | `/api/users/:id` | রোল পরিবর্তন। <br> **Body:** `{ role: 'moderator' }`         |
+| **Delete**      | `DELETE` | `/api/users/:id` | ইউজার ডিলিট।                                                 |
 
 ---
 
 ### 11. Settings Manager (সেটিংস ম্যানেজমেন্ট)
+
 **Base URL:** `/api/settings`
 
-| Action | Method | Endpoint | Description / Payload |
-| :--- | :--- | :--- | :--- |
-| **Get Settings** | `GET` | `/api/settings` | সাইটের সেটিংস আনবে। |
-| **Update** | `PATCH` | `/api/settings` | সেটিংস আপডেট। <br> **Body:** `{ general: {...}, appearance: {...}, ... }` |
+| Action           | Method  | Endpoint        | Description / Payload                                                     |
+| :--------------- | :------ | :-------------- | :------------------------------------------------------------------------ |
+| **Get Settings** | `GET`   | `/api/settings` | সাইটের সেটিংস আনবে।                                                       |
+| **Update**       | `PATCH` | `/api/settings` | সেটিংস আপডেট। <br> **Body:** `{ general: {...}, appearance: {...}, ... }` |

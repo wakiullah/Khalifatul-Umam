@@ -1,99 +1,18 @@
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, ArrowRight, Tag, User } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  ArrowRight,
+  Tag,
+  User,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import Image from "next/image";
-
-const featuredArticle = {
-  id: 1,
-  title: "The Enduring Legacy of Mujaddid Alf-e-Sani: A 400-Year Retrospective",
-  excerpt:
-    "As we commemorate four centuries since the passing of Imam Ahmad Sirhindi, scholars worldwide reflect on his transformative impact on Islamic thought and spirituality. His teachings on Tawheed continue to inspire millions across the globe.",
-  image:
-    "https://images.unsplash.com/photo-1585036156171-384164a8c675?w=800&h=400&fit=crop",
-  author: "Editorial Team",
-  date: "2024-12-15",
-  readTime: "8 min read",
-  category: "Legacy",
-};
-
-const articles = [
-  {
-    id: 2,
-    title:
-      "Annual Urs Celebrations at Sirhind Sharif Draw Thousands of Devotees",
-    excerpt:
-      "The annual commemoration of Hazrat Mujaddid's blessed departure witnessed an unprecedented gathering of spiritual seekers from across the subcontinent.",
-    image:
-      "https://images.unsplash.com/photo-1564769625905-50e93615e769?w=400&h=300&fit=crop",
-    author: "Ahmad Ali",
-    date: "2024-12-10",
-    readTime: "5 min read",
-    category: "Events",
-  },
-  {
-    id: 3,
-    title: "New Translation of Maktubat Released in English",
-    excerpt:
-      "A comprehensive English translation of the first volume of Maktubat-e-Imam Rabbani has been released, making these precious teachings accessible to a wider audience.",
-    image:
-      "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=400&h=300&fit=crop",
-    author: "Dr. Sarah Williams",
-    date: "2024-12-05",
-    readTime: "4 min read",
-    category: "Publications",
-  },
-  {
-    id: 4,
-    title: "International Conference on Naqshbandi Spirituality Announced",
-    excerpt:
-      "Leading Islamic universities will host a week-long conference exploring the spiritual teachings of the Naqshbandi-Mujaddidi order.",
-    image:
-      "https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=400&h=300&fit=crop",
-    author: "Conference Committee",
-    date: "2024-11-28",
-    readTime: "3 min read",
-    category: "Announcements",
-  },
-  {
-    id: 5,
-    title: "Preservation Project: Digitizing Historical Manuscripts",
-    excerpt:
-      "A collaborative effort between archives in India, Pakistan, and Turkey aims to digitize rare manuscripts from the Mujaddidi tradition.",
-    image:
-      "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&h=300&fit=crop",
-    author: "Heritage Foundation",
-    date: "2024-11-20",
-    readTime: "6 min read",
-    category: "Heritage",
-  },
-  {
-    id: 6,
-    title: "Understanding Wahdat al-Shuhud: A Scholarly Analysis",
-    excerpt:
-      "An in-depth exploration of Imam Sirhindi's concept of Wahdat al-Shuhud (Unity of Witnessing) and its significance in Islamic metaphysics.",
-    image:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop",
-    author: "Dr. Khalid Mahmood",
-    date: "2024-11-15",
-    readTime: "10 min read",
-    category: "Articles",
-  },
-  {
-    id: 7,
-    title: "Youth Programs: Connecting New Generations with Sacred Heritage",
-    excerpt:
-      "Madrassas and Islamic centers worldwide are introducing specialized programs to teach young Muslims about the Mujaddidi legacy.",
-    image:
-      "https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=400&h=300&fit=crop",
-    author: "Education Team",
-    date: "2024-11-10",
-    readTime: "5 min read",
-    category: "Education",
-  },
-];
+import Link from "next/link";
+import { getNewsData } from "@/services/news.api";
 
 const categories = [
   "All",
@@ -106,21 +25,55 @@ const categories = [
   "Education",
 ];
 
-export default function News() {
+// Force dynamic rendering to ensure fresh data on each page
+export const dynamic = "force-dynamic";
+
+export default async function News(props: {
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const searchParams = await props.searchParams;
+  const currentPage = Number(searchParams.page) || 1;
+  const limit = 9; // 1 featured + 8 grid items per page
+
+  console.log("News Page - Current page:", currentPage, "Limit:", limit);
+
+  // Fetch news data from API with pagination
+  const newsResponse = await getNewsData(currentPage, limit);
+  const allNews = newsResponse.data || [];
+  const totalPages = newsResponse.pages || 1;
+
+  // Filter published news
+  const publishedNews = allNews.filter((n) => n.is_published);
+
+  // Get featured article (first featured news or first published news)
+  const featuredArticle =
+    publishedNews.find((n) => n.is_featured) || publishedNews[0];
+
+  // Get other articles (exclude featured)
+  const articles = publishedNews
+    .filter((n) => n._id !== featuredArticle?._id)
+    .slice(0, 8);
+
+  console.log("Fetched news data:", {
+    newsResponse,
+  });
   return (
     <>
       {/* Hero Section */}
-      <section className="pt-32 pb-16 bg-gradient-to-b from-primary/10 to-background islamic-pattern">
+      <section
+        id="news-top"
+        className="pt-32 pb-16 bg-gradient-to-b from-primary/10 to-background islamic-pattern"
+      >
         <div className="container mx-auto px-4 text-center">
           <span className="font-arabic text-2xl text-secondary mb-4 block">
             الأخبار والمقالات
           </span>
           <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-6">
-            News & Articles
+            সংবাদ ও প্রবন্ধসমূহ
           </h1>
           <p className="font-body text-lg text-muted-foreground max-w-2xl mx-auto">
-            Stay updated with the latest news, scholarly articles, events, and
-            announcements related to Hazrat Mujaddid Alf-e-Sani رحمة الله عليه
+            সংবাদ ও প্রবন্ধসমূহ সম্পর্কে আপনার সবচেয়ে নতুন এবং গুরুত্বপূর্ণ
+            তথ্য
           </p>
         </div>
       </section>
@@ -146,59 +99,70 @@ export default function News() {
       {/* Featured Article */}
       <section className="py-16">
         <div className="container mx-auto px-4">
-          <Card className="overflow-hidden border-border/50 shadow-card group">
-            <div className="grid md:grid-cols-2 gap-0">
-              <div className="relative overflow-hidden">
-                <Image
-                  src={featuredArticle.image}
-                  alt={featuredArticle.title}
-                  width={800}
-                  height={400}
-                  className="w-full h-full object-cover min-h-[300px] group-hover:scale-105 transition-transform duration-700"
-                />
-                <Badge className="absolute top-4 left-4 bg-secondary text-secondary-foreground">
-                  Featured
-                </Badge>
-              </div>
-              <CardContent className="p-8 flex flex-col justify-center">
-                <Badge variant="outline" className="w-fit mb-4">
-                  <Tag className="w-3 h-3 mr-1" />
-                  {featuredArticle.category}
-                </Badge>
-                <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-4 group-hover:text-primary transition-colors">
-                  {featuredArticle.title}
-                </h2>
-                <p className="font-body text-muted-foreground leading-relaxed mb-6">
-                  {featuredArticle.excerpt}
-                </p>
-                <div className="flex items-center gap-4 text-sm text-muted-foreground mb-6">
-                  <span className="flex items-center gap-1">
-                    <User className="w-4 h-4" />
-                    {featuredArticle.author}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Calendar className="w-4 h-4" />
-                    {new Date(featuredArticle.date).toLocaleDateString(
-                      "en-US",
-                      {
+          {featuredArticle && (
+            <Card className="overflow-hidden border-border/50 shadow-card group py-0 ">
+              <div className="grid md:grid-cols-2 gap-0">
+                <div className="relative overflow-hidden aspect-video md:aspect-auto">
+                  {featuredArticle.image_url ? (
+                    <Image
+                      src={featuredArticle.image_url}
+                      alt={featuredArticle.title}
+                      fill
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+                      <Calendar className="w-20 h-20 text-muted-foreground" />
+                    </div>
+                  )}
+                  <Badge className="absolute top-4 left-4 bg-secondary text-secondary-foreground">
+                    Featured
+                  </Badge>
+                </div>
+                <CardContent className="p-8 flex flex-col justify-center">
+                  <Badge variant="outline" className="w-fit mb-4">
+                    <Tag className="w-3 h-3 mr-1" />
+                    {featuredArticle.category}
+                  </Badge>
+                  <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-4 group-hover:text-primary transition-colors">
+                    {featuredArticle.title}
+                  </h2>
+                  <p className="font-body text-muted-foreground leading-relaxed mb-6">
+                    {featuredArticle.excerpt || "No description available"}
+                  </p>
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground mb-6">
+                    {featuredArticle.author && (
+                      <span className="flex items-center gap-1">
+                        <User className="w-4 h-4" />
+                        {featuredArticle.author}
+                      </span>
+                    )}
+                    <span className="flex items-center gap-1">
+                      <Calendar className="w-4 h-4" />
+                      {new Date(
+                        featuredArticle.published_at ||
+                          featuredArticle.createdAt,
+                      ).toLocaleDateString("en-US", {
                         month: "long",
                         day: "numeric",
                         year: "numeric",
-                      },
+                      })}
+                    </span>
+                    {featuredArticle.read_time && (
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-4 h-4" />
+                        {featuredArticle.read_time}
+                      </span>
                     )}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Clock className="w-4 h-4" />
-                    {featuredArticle.readTime}
-                  </span>
-                </div>
-                <Button variant="elegant" className="w-fit">
-                  Read Full Article
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </CardContent>
-            </div>
-          </Card>
+                  </div>
+                  <Button variant="elegant" className="w-fit">
+                    Read Full Article
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </CardContent>
+              </div>
+            </Card>
+          )}
         </div>
       </section>
 
@@ -206,7 +170,7 @@ export default function News() {
       <div className="section-divider" />
 
       {/* Articles Grid */}
-      <section className="py-16">
+      <section className="pb-12 ">
         <div className="container mx-auto px-4">
           <h2 className="font-display text-2xl font-bold text-foreground mb-8">
             Latest Articles
@@ -214,18 +178,23 @@ export default function News() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {articles.map((article, index) => (
               <Card
-                key={article.id}
-                className="group overflow-hidden border-border/50 hover:shadow-elegant transition-all duration-500"
+                key={article._id}
+                className="group overflow-hidden border-border/50 hover:shadow-elegant transition-all pt-0 duration-500 "
                 style={{ animationDelay: `${index * 100}ms` }}
               >
-                <div className="relative overflow-hidden">
-                  <Image
-                    src={article.image}
-                    alt={article.title}
-                    width={400}
-                    height={300}
-                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-700"
-                  />
+                <div className="relative overflow-hidden aspect-video">
+                  {article.image_url ? (
+                    <Image
+                      src={article.image_url}
+                      alt={article.title}
+                      fill
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+                      <Calendar className="w-12 h-12 text-muted-foreground" />
+                    </div>
+                  )}
                   <Badge className="absolute top-3 left-3 bg-background/90 text-foreground text-xs">
                     {article.category}
                   </Badge>
@@ -235,32 +204,117 @@ export default function News() {
                     {article.title}
                   </h3>
                   <p className="font-body text-sm text-muted-foreground leading-relaxed mb-4 line-clamp-3">
-                    {article.excerpt}
+                    {article.excerpt || "No description available"}
                   </p>
                   <div className="flex items-center justify-between text-xs text-muted-foreground pt-4 border-t border-border/50">
                     <span className="flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
-                      {new Date(article.date).toLocaleDateString("en-US", {
+                      {new Date(
+                        article.published_at || article.createdAt,
+                      ).toLocaleDateString("en-US", {
                         month: "short",
                         day: "numeric",
                       })}
                     </span>
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      {article.readTime}
-                    </span>
+                    {article.read_time && (
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {article.read_time}
+                      </span>
+                    )}
                   </div>
                 </CardContent>
               </Card>
             ))}
           </div>
 
-          {/* Load More */}
-          <div className="text-center mt-12">
-            <Button variant="outline" size="lg">
-              Load More Articles
-            </Button>
-          </div>
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-12">
+              {/* Previous Button */}
+              <Link
+                href={`/news?page=${currentPage - 1}#news-top`}
+                scroll={true}
+                className={
+                  currentPage === 1 ? "pointer-events-none opacity-50" : ""
+                }
+              >
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft className="w-4 h-4 mr-1" />
+                  পূর্ববর্তী
+                </Button>
+              </Link>
+
+              {/* Page Numbers */}
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                  (pageNum) => {
+                    // Show first page, last page, current page, and pages around current
+                    if (
+                      pageNum === 1 ||
+                      pageNum === totalPages ||
+                      (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
+                    ) {
+                      return (
+                        <Link
+                          key={pageNum}
+                          href={`/news?page=${pageNum}#news-top`}
+                          scroll={true}
+                        >
+                          <Button
+                            variant={
+                              pageNum === currentPage ? "elegant" : "outline"
+                            }
+                            size="sm"
+                            className="min-w-10"
+                          >
+                            {pageNum}
+                          </Button>
+                        </Link>
+                      );
+                    } else if (
+                      pageNum === currentPage - 2 ||
+                      pageNum === currentPage + 2
+                    ) {
+                      return (
+                        <span
+                          key={pageNum}
+                          className="px-2 text-muted-foreground"
+                        >
+                          ...
+                        </span>
+                      );
+                    }
+                    return null;
+                  },
+                )}
+              </div>
+
+              {/* Next Button */}
+              <Link
+                href={`/news?page=${currentPage + 1}#news-top`}
+                scroll={true}
+                className={
+                  currentPage === totalPages
+                    ? "pointer-events-none opacity-50"
+                    : ""
+                }
+              >
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage === totalPages}
+                >
+                  পরবর্তী
+                  <ChevronRight className="w-4 h-4 ml-1" />
+                </Button>
+              </Link>
+            </div>
+          )}
         </div>
       </section>
 

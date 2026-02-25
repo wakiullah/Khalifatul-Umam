@@ -1,14 +1,27 @@
 import { Quote } from "lucide-react";
 import { sayingsData, featuredSaying } from "@/data/siteData";
+import { SayingData } from "@/type/saying";
 
-export function SayingsSection() {
+interface SayingsSectionProps {
+  sayings: SayingData[];
+}
+
+export function SayingsSection({ sayings }: SayingsSectionProps) {
+  // Filter published sayings, fallback to static data
+  const publishedSayings =
+    sayings.filter((s) => s.is_published).length > 0
+      ? sayings.filter((s) => s.is_published)
+      : sayingsData;
+
+  const featured =
+    sayings.find((s) => s.is_featured && s.is_published) || featuredSaying;
   return (
     <section id="sayings" className="py-24 bg-background">
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-16">
           <span className="text-secondary font-body text-sm tracking-widest uppercase">
-            জ্ঞানের বাণী
+            মুবারক বাণী
           </span>
           <h2 className="font-display text-4xl md:text-5xl text-foreground mt-4 mb-6">
             বাণীসমূহ
@@ -19,15 +32,15 @@ export function SayingsSection() {
             <span className="w-12 h-px bg-secondary" />
           </div>
           <p className="font-body text-muted-foreground max-w-2xl mx-auto mt-6">
-            মুজাদ্দিদে আলফে সানীর পত্রাবলী ও শিক্ষা থেকে চিরন্তন জ্ঞান
+            সাইয়িদুনা হযরত খলিফাতুল উমাম আলাইহিস সালাম উনার মুবারক বানীসমূহ
           </p>
         </div>
 
         {/* Sayings Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {sayingsData.map((saying, index) => (
+          {publishedSayings.slice(0, 6).map((saying, index) => (
             <div
-              key={index}
+              key={saying._id || index}
               className="group relative bg-card rounded-lg p-6 shadow-card border border-border/50 hover:shadow-elegant transition-all duration-300 text-center"
             >
               {/* Quote icon */}
@@ -49,9 +62,11 @@ export function SayingsSection() {
               </p>
 
               {/* Context */}
-              <p className="font-body text-sm text-muted-foreground">
-                {saying.context}
-              </p>
+              {saying.context && (
+                <p className="font-body text-sm text-muted-foreground">
+                  {saying.context}
+                </p>
+              )}
 
               {/* Hover accent */}
               <div className="absolute bottom-0 left-0 w-0 h-1 bg-secondary group-hover:w-full transition-all duration-500 rounded-b-lg" />
@@ -69,13 +84,13 @@ export function SayingsSection() {
             <div className="absolute bottom-4 right-4 w-12 h-12 border-b-2 border-r-2 border-secondary/50" />
 
             <p className=" text-2xl md:text-3xl text-secondary mb-6 leading-loose text-arabic">
-              {featuredSaying.arabic}
+              {featured.arabic}
             </p>
             <p className="font-display text-xl md:text-2xl text-primary-foreground italic mb-4">
-              "{featuredSaying.translation}"
+              "{featured.translation}"
             </p>
             <p className="font-body text-primary-foreground/70">
-              — {featuredSaying.source}
+              — সাইয়িদুনা হযরত খলিফাতুল উমাম আলাইহিস সালাম
             </p>
           </div>
         </div>
