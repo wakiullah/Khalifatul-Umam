@@ -54,10 +54,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { UserPlus } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/context/AuthContext";
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const { user, logout } = useAuth();
+  const { toast } = useToast();
 
   const sidebarItems = [
     { id: "overview", label: "ওভারভিউ", icon: Home, href: "/dashboard" },
@@ -131,6 +135,13 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
     },
   ];
 
+  const handleLogout = async () => {
+    await logout(); // Use logout from AuthContext
+    toast({
+      title: "লগআউট সফল",
+      description: "আপনি সফলভাবে লগআউট করেছেন।",
+    });
+  };
   return (
     <div className="min-h-screen bg-background flex">
       {/* Sidebar */}
@@ -179,7 +190,10 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 
         {/* Sidebar Footer */}
         <div className="p-4 border-t border-border">
-          <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-destructive hover:bg-destructive/10 transition-all duration-200">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-destructive hover:bg-destructive/10 transition-all duration-200"
+          >
             <LogOut className="h-5 w-5 flex-shrink-0" />
             {sidebarOpen && <span className="font-medium">লগআউট</span>}
           </button>
@@ -217,14 +231,19 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
                     <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center">
                       <span className="text-primary font-bold">অ</span>
                     </div>
-                    <span className="font-medium">অ্যাডমিন</span>
+                    <span className="font-medium">
+                      {user?.name || "অ্যাডমিন"}
+                    </span>
                     <ChevronDown className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start">
                   <DropdownMenuItem>প্রোফাইল</DropdownMenuItem>
                   <DropdownMenuItem>সেটিংস</DropdownMenuItem>
-                  <DropdownMenuItem className="text-destructive">
+                  <DropdownMenuItem
+                    className="text-destructive"
+                    onClick={handleLogout}
+                  >
                     লগআউট
                   </DropdownMenuItem>
                 </DropdownMenuContent>
