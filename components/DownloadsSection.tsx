@@ -34,11 +34,11 @@ export function DownloadsSection({ downloads }: DownloadsSectionProps) {
             التحميلات
           </span>
           <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
-            ডাউনলোডযোগ্য সম্পদ
+            ডাউনলোডযোগ্য
           </h2>
           <p className="font-body text-muted-foreground max-w-2xl mx-auto">
-            হযরত মুজাদ্দিদে আলফে সানীর শিক্ষা সম্পর্কে আপনার জ্ঞান গভীর করতে বই,
-            প্রবন্ধ, অডিও বক্তৃতা ও গবেষণা পত্র ডাউনলোড করুন
+            আপনার জ্ঞান গভীর করতে বই, প্রবন্ধ, অডিও বক্তৃতা ও গবেষণা পত্র
+            ডাউনলোড করুন
           </p>
         </div>
 
