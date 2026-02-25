@@ -33,7 +33,7 @@ export async function middleware(request: NextRequest) {
   if (pathname.startsWith("/dashboard")) {
     if (!token) {
       return NextResponse.redirect(
-        new URL("/login?from=dashboard", request.url),
+        new URL(`/login?from=${pathname}`, request.url),
       );
     }
 
@@ -48,7 +48,9 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL("/", request.url));
       }
     } catch (error) {
-      return NextResponse.redirect(new URL("/login", request.url));
+      return NextResponse.redirect(
+        new URL(`/login?from=${pathname}`, request.url),
+      );
     }
   }
 

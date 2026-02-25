@@ -46,8 +46,9 @@ function LoginForm() {
         // AuthContext refresh করুন
         await checkUser();
 
-        // Redirect করুন
-        router.push(from);
+        // Redirect করুন (ensure path starts with /)
+        const redirectPath = from.startsWith("/") ? from : `/${from}`;
+        router.push(redirectPath);
         router.refresh();
       } else {
         toast({
