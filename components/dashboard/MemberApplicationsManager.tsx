@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { MemberData, PaginationMeta } from "@/type/member";
 import {
@@ -67,6 +67,10 @@ export default function MemberApplicationsManager({
   const [isLoading, setIsLoading] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [viewingMember, setViewingMember] = useState<MemberData | null>(null);
+
+  useEffect(() => {
+    setMembers(initialData);
+  }, [initialData]);
 
   const handleApprove = async (id: string) => {
     setIsLoading(true);

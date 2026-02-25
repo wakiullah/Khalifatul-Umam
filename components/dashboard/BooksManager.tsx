@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Plus,
@@ -63,6 +63,21 @@ const BooksManager = ({ initialData }: BooksManagerProps) => {
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [isBookEditing, setIsBookEditing] = useState(false);
   const [editingBook, setEditingBook] = useState<Book | null>(null);
+
+  useEffect(() => {
+    setBooks(
+      initialData.map((b) => ({
+        id: b._id,
+        title: b.title,
+        arabic_title: b.arabic_title,
+        description: b.description,
+        volumes: b.volumes,
+        language: b.language,
+        is_featured: b.is_featured,
+        is_published: b.is_published,
+      })),
+    );
+  }, [initialData]);
 
   const handleAddBook = async (data: BookFormData) => {
     try {

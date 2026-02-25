@@ -2,7 +2,7 @@
 
 console.log("Dashboard component loaded:", "components/dashboard/GalleryManager.tsx");
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Search, Image, Upload, Eye, Download, Trash2, MoreVertical } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -45,6 +45,10 @@ const GalleryManager = ({ initialData }: { initialData: GalleryData[] }) => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [newItem, setNewItem] = useState({ title: "", description: "", image_url: "", category: "অন্যান্য" });
+
+  useEffect(() => {
+    setGalleryItems(initialData);
+  }, [initialData]);
 
   const handleAddItem = async () => {
     if (!newItem.title || !newItem.image_url) {

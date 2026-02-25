@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { NewsData, CreateNewsRequest } from "@/type/news";
@@ -105,6 +105,10 @@ export default function NewsManager({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingNews, setEditingNews] = useState<NewsData | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setNews(initialData);
+  }, [initialData]);
 
   const [formData, setFormData] = useState<CreateNewsRequest>({
     title: "",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Opinion } from "@/type/opinions";
 import {
@@ -58,6 +58,10 @@ export default function OpinionsManager({
   const [isLoading, setIsLoading] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [viewingOpinion, setViewingOpinion] = useState<Opinion | null>(null);
+
+  useEffect(() => {
+    setOpinions(initialData);
+  }, [initialData]);
 
   const handleApprove = async (id: string) => {
     setIsLoading(true);

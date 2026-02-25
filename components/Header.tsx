@@ -23,12 +23,12 @@ import Logo from "@/public/logo.png";
 const navLinks = [
   { name: "হোম", href: "/", icon: Home },
   { name: "জীবনী", href: "/#biography", icon: User },
-  { name: "অবদান", href: "/#contributions", icon: BookOpen },
   { name: "বাণীসমূহ", href: "/#sayings", icon: MessageSquare },
   { name: "বইসমূহ", href: "/#books", icon: BookOpen },
   { name: "গ্যালারি", href: "/#gallery", icon: ImageIcon },
   { name: "সংবাদ", href: "/news", icon: Newspaper },
   { name: "ফোরাম", href: "/forum", icon: MessageCircle },
+  { name: "সদস্য ফরম", href: "/member", icon: MessageCircle },
 ];
 
 export function Header() {
@@ -101,7 +101,7 @@ export function Header() {
                     isHeaderSolid ? "text-foreground" : "text-white"
                   }`}
                 >
-                  খলিফাতুল উমাম
+                  খলীফাতুল উমাম
                 </h1>
                 <p
                   className={`text-xs text-arabic ${

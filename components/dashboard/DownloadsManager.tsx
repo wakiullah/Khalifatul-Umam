@@ -2,7 +2,7 @@
 
 console.log("Dashboard component loaded:", "components/dashboard/DownloadsManager.tsx");
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Search, Download, FileText, Music, Book, Trash2, MoreVertical, Upload, Edit } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -38,6 +38,23 @@ const DownloadsManager = ({ initialData }: { initialData: DownloadData[] }) => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingItem, setEditingItem] = useState<typeof downloads[0] | null>(null);
+
+  useEffect(() => {
+    setDownloads(
+      initialData.map((d) => ({
+        id: d._id,
+        title: d.title,
+        description: d.description,
+        file_url: d.file_url,
+        file_type: d.file_type,
+        file_size: d.file_size,
+        category: d.category,
+        language: d.language,
+        download_count: d.download_count,
+        is_published: d.is_published,
+      }))
+    );
+  }, [initialData]);
 
   const handleAddDownload = async (data: DownloadFormData) => {
     try {
