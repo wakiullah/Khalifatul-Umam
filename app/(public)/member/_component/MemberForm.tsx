@@ -170,7 +170,7 @@ export default function MemberForm() {
   if (isSubmitted) {
     return (
       <main className="min-h-screen flex flex-col">
-        <Header />
+        {/* <Header /> */}
         <section className="flex-1 pt-32 pb-16 flex items-center justify-center bg-gradient-to-b from-primary/10 to-background">
           <Card className="max-w-md mx-auto text-center">
             <CardContent className="pt-8 pb-8">

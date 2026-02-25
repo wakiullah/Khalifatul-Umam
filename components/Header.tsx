@@ -8,11 +8,11 @@ import {
   User,
   BookOpen,
   MessageSquare,
-  Image as ImageIcon,
   Newspaper,
   MessageCircle,
   Send,
   ChevronRight,
+  TextIcon,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import Link from "next/link";
@@ -25,7 +25,7 @@ const navLinks = [
   { name: "জীবনী", href: "/#biography", icon: User },
   { name: "বাণীসমূহ", href: "/#sayings", icon: MessageSquare },
   { name: "বইসমূহ", href: "/#books", icon: BookOpen },
-  { name: "গ্যালারি", href: "/#gallery", icon: ImageIcon },
+  { name: "পোস্টস", href: "/posts", icon: TextIcon },
   { name: "সংবাদ", href: "/news", icon: Newspaper },
   { name: "ফোরাম", href: "/forum", icon: MessageCircle },
   { name: "সদস্য ফরম", href: "/member", icon: MessageCircle },
@@ -73,7 +73,9 @@ export function Header() {
       href === "/" ||
       href === "/news" ||
       href === "/opinions" ||
-      href === "/forum"
+      href === "/forum" ||
+      href === "/member" ||
+      href === "/posts"
     );
   };
 
