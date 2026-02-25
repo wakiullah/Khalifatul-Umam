@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Header } from "@/components/Header";
@@ -19,7 +19,7 @@ import { Loader2, LogIn } from "lucide-react";
 import { loginUser } from "@/services/auth.api";
 import { useAuth } from "@/context/AuthContext";
 
-export default function Login() {
+function LoginForm() {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -137,5 +137,13 @@ export default function Login() {
 
       <Footer />
     </main>
+  );
+}
+
+export default function Login() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <LoginForm />
+    </Suspense>
   );
 }

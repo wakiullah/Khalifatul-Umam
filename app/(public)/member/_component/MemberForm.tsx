@@ -18,7 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, UserPlus, CheckCircle } from "lucide-react";
 import { z } from "zod";
 
-import { MemberData } from "@/type/member";
+import { MemberData, CreateMemberRequest } from "@/type/member";
 import { createMemberApplication } from "@/services/members.api";
 
 // Validation schema
@@ -78,15 +78,15 @@ export default function MemberForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [errors, setErrors] = useState<
-    Partial<Record<keyof MemberData, string>>
+    Partial<Record<keyof CreateMemberRequest, string>>
   >({});
 
-  const [formData, setFormData] = useState<MemberData>({
+  const [formData, setFormData] = useState<CreateMemberRequest>({
     full_name: "",
     father_name: "",
     mother_name: "",
     date_of_birth: "",
-    gender: "",
+    gender: "পুরুষ",
     religion: "",
     nationality: "বাংলাদেশী",
     nid_number: "",
@@ -109,7 +109,7 @@ export default function MemberForm() {
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name as keyof MemberData]) {
+    if (errors[name as keyof CreateMemberRequest]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
   };
@@ -120,10 +120,11 @@ export default function MemberForm() {
 
     const result = memberFormSchema.safeParse(formData);
     if (!result.success) {
-      const fieldErrors: Partial<Record<keyof MemberData, string>> = {};
+      const fieldErrors: Partial<Record<keyof CreateMemberRequest, string>> =
+        {};
       result.error.issues.forEach((err) => {
         if (err.path[0]) {
-          fieldErrors[err.path[0] as keyof MemberData] = err.message;
+          fieldErrors[err.path[0] as keyof CreateMemberRequest] = err.message;
         }
       });
       setErrors(fieldErrors);

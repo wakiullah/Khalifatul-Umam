@@ -44,10 +44,15 @@ export function DownloadsSection({ downloads }: DownloadsSectionProps) {
 
         {/* Downloads Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {displayDownloads.map((item, index) => {
+          {displayDownloads.map((item: any, index: number) => {
+            // Normalize data to handle both API (snake_case) and static (camelCase) formats
+            const fileType = item.file_type || item.type;
+            const fileSize = item.file_size || item.size;
+            const downloadCount = item.download_count || item.downloads;
+            const iconType = item.iconType;
+
             const IconComponent =
-              iconMap[item.file_type?.toLowerCase() || item.iconType] ||
-              FileText;
+              iconMap[fileType?.toLowerCase() || iconType] || FileText;
             return (
               <Card
                 key={item._id || item.id}
@@ -76,10 +81,10 @@ export function DownloadsSection({ downloads }: DownloadsSectionProps) {
                   {/* Meta Info */}
                   <div className="flex flex-wrap gap-2 mb-4">
                     <Badge variant="outline" className="text-xs">
-                      {item.file_type}
+                      {fileType}
                     </Badge>
                     <Badge variant="outline" className="text-xs">
-                      {item.file_size}
+                      {fileSize}
                     </Badge>
                     <Badge
                       variant="outline"
@@ -93,7 +98,7 @@ export function DownloadsSection({ downloads }: DownloadsSectionProps) {
                   {/* Download Stats & Button */}
                   <div className="flex items-center justify-between pt-4 border-t border-border/50">
                     <span className="text-xs text-muted-foreground">
-                      {item.download_count} ডাউনলোড
+                      {downloadCount} ডাউনলোড
                     </span>
                     <Button
                       variant="outline"

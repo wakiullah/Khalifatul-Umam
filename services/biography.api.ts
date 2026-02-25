@@ -14,7 +14,7 @@ export async function getBiographyData(): Promise<BiographyResponse> {
   return res.json();
 }
 
-export async function updateBiographyData(data: Partial<BiographyData>) {
+export async function updateBiographyData(data: Partial<BiographyData> | any) {
   const headers = await getAuthHeaders();
   const res = await fetch(`${API_BASE_URL}/dashboard/biography`, {
     method: "PATCH",

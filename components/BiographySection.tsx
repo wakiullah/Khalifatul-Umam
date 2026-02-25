@@ -14,8 +14,16 @@ interface BiographySectionProps {
 }
 
 export function BiographySection({ biography }: BiographySectionProps) {
-  // Fallback to static data if API data not available
-  const data = biography || biographyData;
+  // Normalize data to handle both API (snake_case) and static (camelCase) formats
+  const apiData = biography as BiographyData | null;
+  const staticData = biographyData as any;
+
+  const arabicName = apiData?.arabic_name || staticData.arabicName;
+  const englishName = apiData?.english_name || staticData.englishName;
+  const fullName = apiData?.full_name || staticData.fullName;
+  const title = apiData?.title || staticData.title;
+  const description = apiData?.description || staticData.description;
+  const timeline = apiData?.timeline || staticData.timeline;
   return (
     <section id="biography" className="py-24 bg-background">
       <div className="container mx-auto px-4">
@@ -45,10 +53,10 @@ export function BiographySection({ biography }: BiographySectionProps) {
                     <span className="font-arabic text-5xl text-primary">م</span>
                   </div>
                   <p className="font-arabic text-2xl text-primary mb-2">
-                    {data?.arabic_name || biographyData.arabicName}
+                    {arabicName}
                   </p>
                   <p className="text-muted-foreground font-body">
-                    {data?.english_name || biographyData.englishName}
+                    {englishName}
                   </p>
                 </div>
               </div>
@@ -63,14 +71,12 @@ export function BiographySection({ biography }: BiographySectionProps) {
           {/* Biography Text */}
           <div>
             <h3 className="font-display text-2xl text-foreground mb-6">
-              {data?.full_name || biographyData.fullName}
+              {fullName}
             </h3>
             <div className="space-y-4 font-body text-muted-foreground leading-relaxed">
-              {(data?.description || biographyData.description).map(
-                (para, index) => (
-                  <p key={index}>{para}</p>
-                ),
-              )}
+              {description.map((para: string, index: number) => (
+                <p key={index}>{para}</p>
+              ))}
             </div>
 
             {/* Quick facts */}
@@ -79,15 +85,11 @@ export function BiographySection({ biography }: BiographySectionProps) {
                 <span className="text-secondary text-sm font-body">
                   পূর্ণ নাম
                 </span>
-                <p className="text-foreground font-display mt-1">
-                  {data?.full_name || biographyData.fullName}
-                </p>
+                <p className="text-foreground font-display mt-1">{fullName}</p>
               </div>
               <div className="p-4 bg-cream-dark rounded-lg">
                 <span className="text-secondary text-sm font-body">উপাধি</span>
-                <p className="text-foreground font-display mt-1">
-                  {data?.title || biographyData.title}
-                </p>
+                <p className="text-foreground font-display mt-1">{title}</p>
               </div>
             </div>
           </div>
@@ -103,7 +105,7 @@ export function BiographySection({ biography }: BiographySectionProps) {
           <div className="absolute left-1/2 top-20 bottom-0 w-px bg-border hidden md:block" />
 
           <div className="space-y-8 md:space-y-0">
-            {(data?.timeline || biographyData.timeline).map((event, index) => {
+            {timeline.map((event: any, index: number) => {
               const IconComponent =
                 iconMap[event.icon_type || event.iconType] || Calendar;
               return (

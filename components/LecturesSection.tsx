@@ -10,13 +10,14 @@ interface LecturesSectionProps {
 export function LecturesSection({ posts }: LecturesSectionProps) {
   // Filter published posts/lectures, fallback to static data
   const publishedPosts =
-    posts.filter((p) => p.is_published).length > 0
-      ? posts.filter((p) => p.is_published)
+    posts.filter((p: any) => p.is_published).length > 0
+      ? posts.filter((p: any) => p.is_published)
       : lecturesData;
 
-  const featured = publishedPosts.find((p) => p.is_featured) || featuredLecture;
-  const displayLectures = publishedPosts
-    .filter((p) => !p.is_featured)
+  const featured: any =
+    publishedPosts.find((p: any) => p.is_featured) || featuredLecture;
+  const displayLectures: any[] = publishedPosts
+    .filter((p: any) => !p.is_featured)
     .slice(0, 6);
   return (
     <section id="lectures" className="py-24 bg-background islamic-pattern">

@@ -8,13 +8,13 @@ interface SayingsSectionProps {
 
 export function SayingsSection({ sayings }: SayingsSectionProps) {
   // Filter published sayings, fallback to static data
-  const publishedSayings =
-    sayings.filter((s) => s.is_published).length > 0
-      ? sayings.filter((s) => s.is_published)
+  const publishedSayings: any[] =
+    sayings.filter((s: any) => s.is_published).length > 0
+      ? sayings.filter((s: any) => s.is_published)
       : sayingsData;
 
-  const featured =
-    sayings.find((s) => s.is_featured && s.is_published) || featuredSaying;
+  const featured: any =
+    sayings.find((s: any) => s.is_featured && s.is_published) || featuredSaying;
   return (
     <section id="sayings" className="py-24 bg-background">
       <div className="container mx-auto px-4">

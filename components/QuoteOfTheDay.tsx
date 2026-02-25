@@ -14,12 +14,12 @@ interface QuoteOfTheDayProps {
 
 export function QuoteOfTheDay({ sayings }: QuoteOfTheDayProps) {
   // Use published sayings or fallback to static data
-  const availableQuotes =
-    sayings.filter((s) => s.is_published).length > 0
-      ? sayings.filter((s) => s.is_published)
+  const availableQuotes: any[] =
+    sayings.filter((s: any) => s.is_published).length > 0
+      ? sayings.filter((s: any) => s.is_published)
       : quotesOfTheDay;
 
-  const [currentQuote, setCurrentQuote] = useState(availableQuotes[0]);
+  const [currentQuote, setCurrentQuote] = useState<any>(availableQuotes[0]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { toast } = useToast();
 
