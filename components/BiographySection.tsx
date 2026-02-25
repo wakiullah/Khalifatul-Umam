@@ -29,10 +29,10 @@ export function BiographySection({ biography }: BiographySectionProps) {
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <span className="text-secondary font-body text-sm tracking-widest uppercase">
-            তাঁর মহান জীবন
+            শান মুবারক
           </span>
           <h2 className="font-display text-4xl md:text-5xl text-foreground mt-4 mb-6">
-            জীবনী
+            মুবারক পরিচয় ও জীবনী
           </h2>
           <div className="flex items-center justify-center gap-4">
             <span className="w-12 h-px bg-secondary" />
@@ -98,7 +98,7 @@ export function BiographySection({ biography }: BiographySectionProps) {
         {/* Timeline */}
         <div className="relative">
           <h3 className="font-display text-2xl text-foreground text-center mb-12">
-            জীবনের গুরুত্বপূর্ণ ঘটনাবলী
+            সুমহান তাজদিদ মুবারক সমূহ
           </h3>
 
           {/* Timeline line */}

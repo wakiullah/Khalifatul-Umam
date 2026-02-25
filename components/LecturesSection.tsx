@@ -25,10 +25,10 @@ export function LecturesSection({ posts }: LecturesSectionProps) {
         {/* Section Header */}
         <div className="text-center mb-16">
           <span className="text-secondary font-body text-sm tracking-widest uppercase">
-            ভিডিও বয়ান
+            ওয়াজ শরীফ
           </span>
           <h2 className="font-display text-4xl md:text-5xl text-foreground mt-4 mb-6">
-            বক্তৃতা ও বয়ানসমূহ
+            মুবারক নসিহত ও ওয়াজ শরীফ
           </h2>
           <div className="flex items-center justify-center gap-4">
             <span className="w-12 h-px bg-secondary" />
@@ -36,8 +36,8 @@ export function LecturesSection({ posts }: LecturesSectionProps) {
             <span className="w-12 h-px bg-secondary" />
           </div>
           <p className="font-body text-muted-foreground max-w-2xl mx-auto mt-6">
-            ইমাম আহমদ সিরহিন্দীর জীবন ও শিক্ষা সম্পর্কে পাণ্ডিত্যপূর্ণ বক্তৃতা ও
-            আলোচনা
+            সাইয়্যিদুনা খলীফাতুল উমাম হযরত শাহজাদা হুযূর ক্বিবলা আলাইহিস সালাম
+            উনার পাণ্ডিত্যপূর্ণ মুবারক নসিহত ও আলোচনা
           </p>
         </div>
 
@@ -60,16 +60,16 @@ export function LecturesSection({ posts }: LecturesSectionProps) {
                 </h3>
                 <p className="font-body text-primary-foreground/70 mb-4">
                   {featured.excerpt ||
-                    "ইমাম আহমদ সিরহিন্দীর জীবন ও শিক্ষা সম্পর্কে আলোচনা"}
+                    "সাইয়্যিদুনা খলীফাতুল উমাম হযরত শাহজাদা হুযূর ক্বিবলা আলাইহিস সালাম উনার পাণ্ডিত্যপূর্ণ মুবারক নসিহত ও আলোচনা"}
                 </p>
                 <div className="flex items-center gap-6 text-primary-foreground/60 text-sm">
                   <span className="flex items-center gap-2">
                     <User className="w-4 h-4" />
-                    {featured.author_name || "বক্তা"}
+                    {featured.speaker || "বক্তা"}
                   </span>
                   <span className="flex items-center gap-2">
                     <Clock className="w-4 h-4" />
-                    {featured.category}
+                    {featured.duration}
                   </span>
                 </div>
               </div>

@@ -17,7 +17,8 @@ export function ContributionsSection() {
         {/* Section Header */}
         <div className="text-center mb-16">
           <span className="text-secondary font-body text-sm tracking-widest uppercase">
-            তাঁর উত্তরাধিকার
+            সাইয়্যিদুনা খলীফাতুল উমাম হযরত শাহজাদা হুযূর ক্বিবলা আলাইহিস সালাম
+            উনার
           </span>
           <h2 className="font-display text-4xl md:text-5xl text-foreground mt-4 mb-6">
             অবদান ও শিক্ষা
@@ -28,7 +29,8 @@ export function ContributionsSection() {
             <span className="w-12 h-px bg-secondary" />
           </div>
           <p className="font-body text-muted-foreground max-w-2xl mx-auto mt-6">
-            ইমাম আহমদ সিরহিন্দীর অবদান শতাব্দীর পর শতাব্দী ধরে ইসলামী চিন্তা ও আধ্যাত্মিকতার গতিপথ নির্ধারণ করেছে।
+            সাইয়্যিদুনা খলীফাতুল উমাম হযরত শাহজাদা হুযূর ক্বিবলা উনার ইসলামী
+            চিন্তা ও আধ্যাত্মিকতা গতিপথ নির্ধারণ করেছে।
           </p>
         </div>
 
@@ -67,14 +69,15 @@ export function ContributionsSection() {
           {/* Decorative elements */}
           <div className="absolute top-0 left-0 w-32 h-32 border border-secondary/20 rounded-full -translate-x-1/2 -translate-y-1/2" />
           <div className="absolute bottom-0 right-0 w-48 h-48 border border-secondary/10 rounded-full translate-x-1/4 translate-y-1/4" />
-          
+
           <div className="relative z-10">
             <span className="text-secondary text-4xl mb-6 block">"</span>
             <blockquote className="font-display text-xl md:text-2xl text-primary-foreground italic max-w-3xl mx-auto leading-relaxed">
-              তাসাউফের উদ্দেশ্য অসাধারণ অবস্থা অর্জন করা নয়, বরং জীবনের প্রতিটি ক্ষেত্রে নবী ﷺ-এর অনুসরণের পূর্ণতা অর্জন করা।
+              তাসাউফের উদ্দেশ্য অসাধারণ অবস্থা অর্জন করা নয়, বরং জীবনের প্রতিটি
+              ক্ষেত্রে হুজুর পাক ﷺ-এর অনুসরণের পূর্ণতা অর্জন করা।
             </blockquote>
             <footer className="mt-6 text-primary-foreground/70 font-body">
-              — মুজাদ্দিদে আলফে সানী (رحمة الله عليه)
+              — সাইয়্যিদুনা খলীফাতুল উমাম আলাইহিস সালাম
             </footer>
           </div>
         </div>

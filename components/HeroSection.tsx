@@ -96,16 +96,16 @@ export function HeroSection() {
           <Button
             variant="hero"
             size="lg"
-            className="w-full sm:w-auto text-base md:text-lg h-12 md:h-14 px-6 md:px-8 shadow-lg hover:shadow-xl transition-shadow"
+            className="w-full sm:w-auto text-base md:text-lg h-12 md:h-14 px-6 md:px-8 shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
           >
-            জীবনী জানুন
+            <p>তাজদিদ জানুন</p>
           </Button>
           <Button
             variant="elegant"
             size="lg"
-            className="w-full sm:w-auto border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground text-base md:text-lg h-12 md:h-14 px-6 md:px-8 shadow-lg hover:shadow-xl transition-shadow"
+            className="w-full sm:w-auto border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground text-base md:text-lg h-12 md:h-14 px-6 md:px-8 shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
           >
-            শিক্ষা দেখুন
+            শানে পড়ুন
           </Button>
         </div>
 
