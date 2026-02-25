@@ -32,7 +32,9 @@ export async function middleware(request: NextRequest) {
   // ২. ড্যাশবোর্ড বা প্রোটেক্টেড রাউট চেক
   if (pathname.startsWith("/dashboard")) {
     if (!token) {
-      return NextResponse.redirect(new URL("/login", request.url));
+      return NextResponse.redirect(
+        new URL("/login?from=dashboard", request.url),
+      );
     }
 
     try {
