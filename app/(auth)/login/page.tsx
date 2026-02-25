@@ -48,14 +48,16 @@ function LoginForm() {
 
         // Redirect করুন (ensure path starts with /)
         const redirectPath = from.startsWith("/") ? from : `/${from}`;
-        router.push(redirectPath);
-        router.refresh();
+
+        // Use window.location for hard redirect to ensure middleware picks up cookie
+        window.location.href = redirectPath;
       } else {
         toast({
           title: "লগইন ব্যর্থ",
           description: res.message || "ফোন নম্বর বা পাসওয়ার্ড ভুল।",
           variant: "destructive",
         });
+        setIsLoading(false);
       }
     } catch (error) {
       console.error("Login error:", error);
@@ -64,7 +66,6 @@ function LoginForm() {
         description: "সার্ভারে সমস্যা হয়েছে।",
         variant: "destructive",
       });
-    } finally {
       setIsLoading(false);
     }
   };

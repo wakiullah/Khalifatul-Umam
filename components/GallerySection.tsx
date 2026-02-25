@@ -29,8 +29,7 @@ export function GallerySection({ gallery }: GallerySectionProps) {
             ফটো গ্যালারি
           </h2>
           <p className="font-body text-muted-foreground max-w-2xl mx-auto">
-            হযরত মুজাদ্দিদে আলফে সানী رحمة الله عليه-এর সাথে সম্পর্কিত পবিত্র
-            স্থান, ঐতিহাসিক নিদর্শন ও সমাবেশের একটি দৃশ্যমান যাত্রা
+            বিভিন্ন ছবি
           </p>
         </div>
 
