@@ -16,7 +16,7 @@ export function SayingsSection({ sayings }: SayingsSectionProps) {
   const featured: any =
     sayings.find((s: any) => s.is_featured && s.is_published) || featuredSaying;
   return (
-    <section id="sayings" className="py-24 bg-background">
+    <section id="sayings" className="pb-20 bg-background">
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-16">

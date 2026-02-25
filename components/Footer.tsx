@@ -108,14 +108,10 @@ export function Footer() {
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="font-body text-sm text-primary-foreground/60 text-center md:text-left">
-              © {new Date().getFullYear()} মুজাদ্দিদে আলফে সানী ট্রিবিউট।
+              © {new Date().getFullYear()} খলীফাতুল উমাম আলাইহিস সালাম উনার মুবারক খিদমতে।
               সর্বস্বত্ব সংরক্ষিত।
             </p>
-            <p className="font-body text-sm text-primary-foreground/60 flex items-center gap-2">
-              উম্মাহর জন্য{" "}
-              <Heart className="w-4 h-4 text-secondary fill-secondary" /> দিয়ে
-              তৈরি
-            </p>
+           
           </div>
         </div>
       </div>

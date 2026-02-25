@@ -25,7 +25,7 @@ export function BiographySection({ biography }: BiographySectionProps) {
   const description = apiData?.description || staticData.description;
   const timeline = apiData?.timeline || staticData.timeline;
   return (
-    <section id="biography" className="py-24 bg-background">
+    <section id="biography" className="pb-20 bg-background">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <span className="text-secondary font-body text-sm tracking-widest uppercase">

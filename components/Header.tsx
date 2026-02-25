@@ -264,10 +264,10 @@ export function Header() {
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border bg-background">
           <Link
             href="/opinions"
-            className="block"
+            className="block cursor-pointer"
             onClick={() => setIsMobileMenuOpen(false)}
           >
-            <Button variant="elegant" className="w-full h-12 text-base gap-2">
+            <Button variant="elegant" className="w-full cursor-pointer h-12 text-base gap-2">
               <Send size={18} />
               মতামত দিন
             </Button>

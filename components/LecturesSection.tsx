@@ -20,7 +20,7 @@ export function LecturesSection({ posts }: LecturesSectionProps) {
     .filter((p: any) => !p.is_featured)
     .slice(0, 6);
   return (
-    <section id="lectures" className="py-24 bg-background islamic-pattern">
+    <section id="lectures" className="pb-24 bg-background islamic-pattern">
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-16">

@@ -26,7 +26,7 @@ export function DownloadsSection({ downloads }: DownloadsSectionProps) {
 
   const displayDownloads = publishedDownloads.slice(0, 6);
   return (
-    <section id="downloads" className="py-20 bg-background islamic-pattern">
+    <section id="downloads" className="pb-20 bg-background islamic-pattern">
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-16">
